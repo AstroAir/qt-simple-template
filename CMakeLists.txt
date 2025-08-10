@@ -9,6 +9,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+include(GNUInstallDirs)
+
 find_package(
     Qt6
     COMPONENTS Core Gui Widgets Svg LinguistTools
