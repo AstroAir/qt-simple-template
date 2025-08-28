@@ -1,0 +1,187 @@
+# Pre-commit configuration for Qt6 C++ project
+# This configuration uses cmake-pre-commit-hooks for CMake-aware C++ linting
+# and additional hooks for comprehensive code quality checks
+
+repos:
+  # CMake-aware C++ linting and formatting hooks
+  - repo: https://github.com/Takishima/cmake-pre-commit-hooks
+    rev: v1.9.6
+    hooks:
+      # C++ code formatting using clang-format
+      - id: clang-format
+        args: [
+          # Use existing build directory if available
+          -B, build/Debug,
+          -B, build/Debug-Windows,
+          -B, build/Debug-Unix,
+          -B, build/test-compile-db,
+          # Source directory
+          -S, .,
+          # Build configuration
+          -DCMAKE_BUILD_TYPE=Debug,
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON,
+          # Disable package managers for faster configuration
+          -DUSE_VCPKG=OFF,
+          -DUSE_CONAN=OFF,
+          -DUSE_MSYS2=OFF,
+          -DBUILD_TESTING=OFF,
+          -DBUILD_DOCS=OFF
+        ]
+        
+      # C++ static analysis using clang-tidy
+      - id: clang-tidy
+        args: [
+          # Use existing build directory if available
+          -B, build/Debug,
+          -B, build/Debug-Windows,
+          -B, build/Debug-Unix,
+          -B, build/test-compile-db,
+          # Source directory
+          -S, .,
+          # Build configuration
+          -DCMAKE_BUILD_TYPE=Debug,
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON,
+          # Disable package managers for faster configuration
+          -DUSE_VCPKG=OFF,
+          -DUSE_CONAN=OFF,
+          -DUSE_MSYS2=OFF,
+          -DBUILD_TESTING=OFF,
+          -DBUILD_DOCS=OFF,
+          # clang-tidy specific checks for Qt development
+          --checks=readability-*,modernize-*,performance-*,bugprone-*,cppcoreguidelines-*,-modernize-use-trailing-return-type,-readability-magic-numbers,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-pro-bounds-array-to-pointer-decay
+        ]
+        
+      # C++ static analysis using cppcheck
+      - id: cppcheck
+        args: [
+          # Use existing build directory if available
+          -B, build/Debug,
+          -B, build/Debug-Windows,
+          -B, build/Debug-Unix,
+          -B, build/test-compile-db,
+          # Source directory
+          -S, .,
+          # Build configuration
+          -DCMAKE_BUILD_TYPE=Debug,
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON,
+          # Disable package managers for faster configuration
+          -DUSE_VCPKG=OFF,
+          -DUSE_CONAN=OFF,
+          -DUSE_MSYS2=OFF,
+          -DBUILD_TESTING=OFF,
+          -DBUILD_DOCS=OFF,
+          # cppcheck specific options
+          --enable=warning,performance,portability,style
+        ]
+
+  # Standard pre-commit hooks for general code quality
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Check for files that would conflict in case-insensitive filesystems
+      - id: check-case-conflict
+      
+      # Check for files that contain merge conflict strings
+      - id: check-merge-conflict
+      
+      # Check for debugger imports and py37+ breakpoint() calls
+      - id: debug-statements
+      
+      # Check whether files parse as valid python
+      - id: check-ast
+        files: \.(py)$
+      
+      # Check for byte-order marker
+      - id: check-byte-order-marker
+      
+      # Require literal syntax when initializing empty or zero Python builtin types
+      - id: check-builtin-literals
+        files: \.(py)$
+      
+      # Check for files with names that would conflict on a case-insensitive filesystem
+      - id: check-case-conflict
+      
+      # Checks that non-binary executables have a proper shebang
+      - id: check-executables-have-shebangs
+      
+      # Check JSON files for parseable syntax
+      - id: check-json
+      
+      # Check for files that contain merge conflict strings
+      - id: check-merge-conflict
+      
+      # Check for symlinks which are changed from the repository to a file
+      - id: check-symlinks
+      
+      # Check TOML files for parseable syntax
+      - id: check-toml
+      
+      # Check XML files for parseable syntax
+      - id: check-xml
+      
+      # Check YAML files for parseable syntax
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      
+      # Check for debugger imports and py37+ breakpoint() calls in python source
+      - id: debug-statements
+        files: \.(py)$
+      
+      # Check whether files parse as valid python
+      - id: check-ast
+        files: \.(py)$
+      
+      # Makes sure files end in a newline and only a newline
+      - id: end-of-file-fixer
+        exclude: \.(svg|ico|png|jpg|jpeg|gif|bmp|tiff|webp)$
+      
+      # Replaces or checks mixed line endings
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      
+      # Trims trailing whitespace
+      - id: trailing-whitespace
+        exclude: \.(svg|ico|png|jpg|jpeg|gif|bmp|tiff|webp)$
+
+  # CMake formatting
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        additional_dependencies: [pyyaml]
+        types: [cmake]
+      - id: cmake-lint
+        additional_dependencies: [pyyaml]
+        types: [cmake]
+
+  # YAML formatting and linting
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-c=.yamllint]
+
+# Configuration for specific file types
+files: ^(app/|controls/|tests/|cmake/|scripts/|\.github/|CMakeLists\.txt|.*\.(cpp|hpp|h|c|cc|cxx|cmake|py|yml|yaml|json|toml|md))$
+
+# Exclude certain files and directories from all hooks
+exclude: |
+  (?x)^(
+    build/.*|
+    \.git/.*|
+    \.vs/.*|
+    \.vscode/.*|
+    vcpkg_installed/.*|
+    .*\.autogen/.*|
+    .*_autogen\..*|
+    moc_.*\.cpp|
+    ui_.*\.h|
+    qrc_.*\.cpp|
+    .*\.qm|
+    .*\.ts
+  )$
+
+# Global configuration
+default_stages: [commit]
+fail_fast: false
+minimum_pre_commit_version: 3.0.0

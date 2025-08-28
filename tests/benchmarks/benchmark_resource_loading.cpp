@@ -1,11 +1,10 @@
-#include <QtTest>
 #include <QApplication>
-#include <QPixmap>
 #include <QFile>
+#include <QPixmap>
 #include <QTranslator>
+#include <QtTest>
 
-class BenchmarkResourceLoading : public QObject
-{
+class BenchmarkResourceLoading : public QObject {
     Q_OBJECT
 
 private slots:
@@ -17,21 +16,17 @@ private slots:
     void benchmarkStylesheetLoading();
     void benchmarkTranslationLoading();
     void benchmarkResourceAccess();
-
 };
 
-void BenchmarkResourceLoading::initTestCase()
-{
+void BenchmarkResourceLoading::initTestCase() {
     qDebug("Starting Resource Loading benchmarks");
 }
 
-void BenchmarkResourceLoading::cleanupTestCase()
-{
+void BenchmarkResourceLoading::cleanupTestCase() {
     qDebug("Finished Resource Loading benchmarks");
 }
 
-void BenchmarkResourceLoading::benchmarkImageLoading()
-{
+void BenchmarkResourceLoading::benchmarkImageLoading() {
     QBENCHMARK {
         QPixmap lightPixmap(":/images/light/theme");
         QPixmap darkPixmap(":/images/dark/theme");
@@ -40,18 +35,17 @@ void BenchmarkResourceLoading::benchmarkImageLoading()
     }
 }
 
-void BenchmarkResourceLoading::benchmarkStylesheetLoading()
-{
+void BenchmarkResourceLoading::benchmarkStylesheetLoading() {
     QString appDir = QApplication::applicationDirPath();
     QString lightStylePath = appDir + "/styles/light.qss";
     QString darkStylePath = appDir + "/styles/dark.qss";
-    
+
     // Fallback for development environment
     if (!QFile::exists(lightStylePath)) {
         lightStylePath = "assets/styles/light.qss";
         darkStylePath = "assets/styles/dark.qss";
     }
-    
+
     QBENCHMARK {
         QFile lightFile(lightStylePath);
         if (lightFile.open(QIODevice::ReadOnly)) {
@@ -59,7 +53,7 @@ void BenchmarkResourceLoading::benchmarkStylesheetLoading()
             lightFile.close();
             Q_UNUSED(lightContent);
         }
-        
+
         QFile darkFile(darkStylePath);
         if (darkFile.open(QIODevice::ReadOnly)) {
             QString darkContent = darkFile.readAll();
@@ -69,10 +63,9 @@ void BenchmarkResourceLoading::benchmarkStylesheetLoading()
     }
 }
 
-void BenchmarkResourceLoading::benchmarkTranslationLoading()
-{
+void BenchmarkResourceLoading::benchmarkTranslationLoading() {
     QString appDir = QApplication::applicationDirPath();
-    
+
     QBENCHMARK {
         QTranslator translator;
         bool loaded = translator.load("app_zh.qm", appDir);
@@ -80,16 +73,15 @@ void BenchmarkResourceLoading::benchmarkTranslationLoading()
     }
 }
 
-void BenchmarkResourceLoading::benchmarkResourceAccess()
-{
+void BenchmarkResourceLoading::benchmarkResourceAccess() {
     QBENCHMARK {
         // Test multiple resource access patterns
         bool exists1 = QFile::exists(":/images/light/theme");
         bool exists2 = QFile::exists(":/images/dark/theme");
-        
+
         QPixmap pixmap(":/images/light/theme");
         bool isNull = pixmap.isNull();
-        
+
         Q_UNUSED(exists1);
         Q_UNUSED(exists2);
         Q_UNUSED(isNull);

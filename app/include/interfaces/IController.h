@@ -9,12 +9,11 @@ class IView;
 
 /**
  * @brief Base interface for all controller classes
- * 
+ *
  * This interface defines the common contract that all controller classes
  * should implement in the MVC architecture.
  */
-class IController : public QObject
-{
+class IController : public QObject {
     Q_OBJECT
 
 public:
@@ -37,7 +36,7 @@ public:
      * @brief Get the model for this controller
      * @return The model instance
      */
-    virtual IModel* getModel() const = 0;
+    virtual IModel *getModel() const = 0;
 
     /**
      * @brief Set the view for this controller
@@ -49,14 +48,15 @@ public:
      * @brief Get the view for this controller
      * @return The view instance
      */
-    virtual IView* getView() const = 0;
+    virtual IView *getView() const = 0;
 
     /**
      * @brief Handle a user action from the view
      * @param actionName The name of the action
      * @param data Optional data associated with the action
      */
-    virtual void handleUserAction(const QString &actionName, const QVariant &data = QVariant()) = 0;
+    virtual void handleUserAction(const QString &actionName,
+                                  const QVariant &data = QVariant()) = 0;
 
     /**
      * @brief Update the view based on model changes

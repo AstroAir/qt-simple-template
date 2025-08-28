@@ -1,28 +1,27 @@
 #pragma once
 
-#include "views/BaseView.h"
+#include <QAction>
+#include <QCloseEvent>
+#include <QLabel>
 #include <QMainWindow>
-#include <QWidget>
 #include <QMenuBar>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QShowEvent>
 #include <QStatusBar>
 #include <QToolBar>
-#include <QAction>
-#include <QPushButton>
-#include <QLabel>
-#include <QProgressBar>
-#include <QCloseEvent>
-#include <QShowEvent>
+#include <QWidget>
+#include "views/BaseView.h"
 
 class ApplicationModel;
 
 /**
  * @brief Main window view for the application
- * 
+ *
  * This class represents the main window of the application,
  * providing the primary user interface.
  */
-class MainWindow : public QMainWindow, public IView
-{
+class MainWindow : public QMainWindow, public IView {
     Q_OBJECT
 
 public:
@@ -32,7 +31,7 @@ public:
     // IView interface implementation
     bool initialize() override;
     void setController(IController *controller) override;
-    IController* getController() const override;
+    IController *getController() const override;
     void updateView() override;
     void showError(const QString &message) override;
     void showInfo(const QString &message) override;
@@ -49,7 +48,7 @@ public:
      * @brief Get the application model
      * @return The application model
      */
-    ApplicationModel* getApplicationModel() const;
+    ApplicationModel *getApplicationModel() const;
 
 protected:
     /**

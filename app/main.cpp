@@ -1,15 +1,15 @@
-#include <QApplication>
-#include <QStandardPaths>
-#include <QDir>
-#include <QDebug>
 #include <config.h>
+#include <QApplication>
+#include <QDebug>
+#include <QDir>
+#include <QStandardPaths>
 
 // MVC Components
-#include "models/ApplicationModel.h"
-#include "views/MainWindow.h"
 #include "controllers/ApplicationController.h"
+#include "models/ApplicationModel.h"
 #include "services/ConfigurationService.h"
 #include "utils/Logger.h"
+#include "views/MainWindow.h"
 
 int main(int argc, char **argv) {
     QApplication app(argc, argv);
@@ -23,7 +23,8 @@ int main(int argc, char **argv) {
     app.setOrganizationDomain("example.com");
 
     // Initialize logger
-    QString logDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QString logDir =
+        QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(logDir);
     QString logFile = QDir(logDir).filePath("application.log");
 

@@ -4,7 +4,7 @@ This directory contains the comprehensive testing infrastructure for the qt-simp
 
 ## Test Structure
 
-```
+```txt
 tests/
 ├── CMakeLists.txt          # Main test configuration
 ├── CTestConfig.cmake       # CTest configuration
@@ -31,6 +31,7 @@ tests/
 ## Test Types
 
 ### Unit Tests
+
 - **test_slider.cpp**: Tests the custom Slider control functionality
 - **test_widget.cpp**: Tests the main Widget class behavior
 - **test_config.cpp**: Tests configuration system and constants
@@ -38,11 +39,13 @@ tests/
 - **test_i18n.cpp**: Tests internationalization functionality
 
 ### Integration Tests
+
 - **test_app_integration.cpp**: Tests complete application workflows
 - **test_build_integration.cpp**: Tests build system integration
 - **test_resource_integration.cpp**: Tests resource loading systems
 
 ### Benchmarks
+
 - **benchmark_widget_performance.cpp**: Performance tests for widget operations
 - **benchmark_theme_switching.cpp**: Performance tests for theme switching
 - **benchmark_resource_loading.cpp**: Performance tests for resource loading
@@ -50,6 +53,7 @@ tests/
 ## Running Tests
 
 ### Using CMake/CTest
+
 ```bash
 # Build with testing enabled (default)
 cmake --build build --target all
@@ -70,6 +74,7 @@ ctest --test-dir build -j 4
 ```
 
 ### Using Test Runner Scripts
+
 ```bash
 # Linux/macOS
 python3 scripts/run_tests.py --type all --verbose
@@ -79,6 +84,7 @@ scripts\run_tests.bat --type all --verbose
 ```
 
 ### Available Script Options
+
 - `--type`: Test type to run (unit, integration, benchmark, all)
 - `--build-dir`: Specify build directory
 - `--verbose`: Enable verbose output
@@ -87,6 +93,7 @@ scripts\run_tests.bat --type all --verbose
 ## Test Framework
 
 The tests use Qt Test framework (QTest) which provides:
+
 - Unit testing capabilities
 - GUI testing support
 - Benchmarking functionality
@@ -97,6 +104,7 @@ The tests use Qt Test framework (QTest) which provides:
 ## Test Environment
 
 Tests are configured to run in headless mode using the offscreen platform:
+
 - Environment variable: `QT_QPA_PLATFORM=offscreen`
 - Timeout: 30 seconds per test
 - Parallel execution supported
@@ -104,6 +112,7 @@ Tests are configured to run in headless mode using the offscreen platform:
 ## Adding New Tests
 
 ### Unit Test Template
+
 ```cpp
 #include <QtTest>
 #include <QApplication>
@@ -134,8 +143,10 @@ QTEST_MAIN(TestYourClass)
 ```
 
 ### Adding Test to CMake
+
 1. Add your test file to the appropriate CMakeLists.txt
 2. Use the `add_qt_test()` function:
+
 ```cmake
 add_qt_test(test_your_class
     test_your_class.cpp
@@ -145,6 +156,7 @@ add_qt_test(test_your_class
 ## Continuous Integration
 
 Tests are automatically run in CI/CD pipelines:
+
 - All test types are executed
 - Test results are reported
 - Coverage information is collected
@@ -162,19 +174,24 @@ Tests are automatically run in CI/CD pipelines:
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Missing Qt platform plugin**: Ensure `QT_QPA_PLATFORM=offscreen` is set
 2. **Resource not found**: Check that resources are properly built and accessible
 3. **Test timeout**: Increase timeout in CTestConfig.cmake if needed
 4. **Build failures**: Ensure all dependencies are properly linked
 
 ### Debug Mode
+
 Run individual tests with debug output:
+
 ```bash
 ./build/tests/unit/test_widget --verbose
 ```
 
 ### Memory Testing
+
 Use Valgrind or similar tools for memory leak detection:
+
 ```bash
 valgrind --tool=memcheck ./build/tests/unit/test_widget
 ```

@@ -1,19 +1,18 @@
 #pragma once
 
-#include "interfaces/IService.h"
+#include <QHash>
 #include <QSettings>
 #include <QString>
 #include <QVariant>
-#include <QHash>
+#include "interfaces/IService.h"
 
 /**
  * @brief Configuration service for managing application settings
- * 
+ *
  * This service provides centralized configuration management
  * with support for different configuration sources.
  */
-class ConfigurationService : public IService
-{
+class ConfigurationService : public IService {
     Q_OBJECT
 
 public:
@@ -35,7 +34,8 @@ public:
      * @param defaultValue The default value if key doesn't exist
      * @return The configuration value or default
      */
-    QVariant getConfiguration(const QString &key, const QVariant &defaultValue) const;
+    QVariant getConfiguration(const QString &key,
+                              const QVariant &defaultValue) const;
 
     /**
      * @brief Check if a configuration key exists

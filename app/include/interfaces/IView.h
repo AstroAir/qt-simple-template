@@ -1,18 +1,17 @@
 #pragma once
 
-#include <QWidget>
 #include <QString>
+#include <QWidget>
 
 class IController;
 
 /**
  * @brief Base interface for all view classes
- * 
+ *
  * This interface defines the common contract that all view classes
  * should implement in the MVC architecture.
  */
-class IView : public QWidget
-{
+class IView : public QWidget {
     Q_OBJECT
 
 public:
@@ -35,7 +34,7 @@ public:
      * @brief Get the controller for this view
      * @return The controller instance
      */
-    virtual IController* getController() const = 0;
+    virtual IController *getController() const = 0;
 
     /**
      * @brief Update the view with new data
@@ -77,7 +76,8 @@ signals:
      * @param actionName The name of the action
      * @param data Optional data associated with the action
      */
-    void userAction(const QString &actionName, const QVariant &data = QVariant());
+    void userAction(const QString &actionName,
+                    const QVariant &data = QVariant());
 
     /**
      * @brief Emitted when the view is about to close

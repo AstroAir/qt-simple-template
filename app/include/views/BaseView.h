@@ -1,22 +1,21 @@
 #pragma once
 
-#include "interfaces/IView.h"
-#include <QWidget>
-#include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QVBoxLayout>
+#include <QWidget>
+#include "interfaces/IView.h"
 
 class IController;
 
 /**
  * @brief Base implementation of IView interface
- * 
+ *
  * This class provides a basic implementation of the IView interface
  * with common UI functionality and layout management.
  */
-class BaseView : public IView
-{
+class BaseView : public IView {
     Q_OBJECT
 
 public:
@@ -26,7 +25,7 @@ public:
     // IView interface implementation
     bool initialize() override;
     void setController(IController *controller) override;
-    IController* getController() const override;
+    IController *getController() const override;
     void updateView() override;
     void showError(const QString &message) override;
     void showInfo(const QString &message) override;
@@ -76,21 +75,21 @@ protected:
      * @brief Get the main layout
      * @return The main layout widget
      */
-    QVBoxLayout* getMainLayout() const;
+    QVBoxLayout *getMainLayout() const;
 
     /**
      * @brief Create a horizontal layout with widgets
      * @param widgets List of widgets to add
      * @return The created layout
      */
-    QHBoxLayout* createHorizontalLayout(const QList<QWidget*> &widgets = {});
+    QHBoxLayout *createHorizontalLayout(const QList<QWidget *> &widgets = {});
 
     /**
      * @brief Create a vertical layout with widgets
      * @param widgets List of widgets to add
      * @return The created layout
      */
-    QVBoxLayout* createVerticalLayout(const QList<QWidget*> &widgets = {});
+    QVBoxLayout *createVerticalLayout(const QList<QWidget *> &widgets = {});
 
     /**
      * @brief Add a separator line

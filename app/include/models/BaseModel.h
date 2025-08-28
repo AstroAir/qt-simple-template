@@ -1,19 +1,18 @@
 #pragma once
 
-#include "interfaces/IModel.h"
 #include <QHash>
-#include <QVariant>
-#include <QString>
 #include <QMutex>
+#include <QString>
+#include <QVariant>
+#include "interfaces/IModel.h"
 
 /**
  * @brief Base implementation of IModel interface
- * 
+ *
  * This class provides a basic implementation of the IModel interface
  * with property management and thread safety.
  */
-class BaseModel : public IModel
-{
+class BaseModel : public IModel {
     Q_OBJECT
 
 public:
@@ -24,7 +23,8 @@ public:
     bool initialize() override;
     bool isValid() const override;
     QVariant getProperty(const QString &propertyName) const override;
-    bool setProperty(const QString &propertyName, const QVariant &value) override;
+    bool setProperty(const QString &propertyName,
+                     const QVariant &value) override;
     void reset() override;
 
 protected:
@@ -55,7 +55,8 @@ protected:
      * @param value The new value
      * @return true if the property should be set
      */
-    virtual bool beforePropertySet(const QString &propertyName, const QVariant &value);
+    virtual bool beforePropertySet(const QString &propertyName,
+                                   const QVariant &value);
 
     /**
      * @brief Called after a property is set
@@ -64,7 +65,9 @@ protected:
      * @param oldValue The old value
      * @param newValue The new value
      */
-    virtual void afterPropertySet(const QString &propertyName, const QVariant &oldValue, const QVariant &newValue);
+    virtual void afterPropertySet(const QString &propertyName,
+                                  const QVariant &oldValue,
+                                  const QVariant &newValue);
 
     /**
      * @brief Set a property without triggering signals (for internal use)

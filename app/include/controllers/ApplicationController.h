@@ -1,20 +1,19 @@
 #pragma once
 
-#include "controllers/BaseController.h"
 #include <QString>
 #include <QTimer>
+#include "controllers/BaseController.h"
 
 class ApplicationModel;
 class MainWindow;
 
 /**
  * @brief Main application controller
- * 
+ *
  * This controller manages the main application logic and coordinates
  * between the application model and main window view.
  */
-class ApplicationController : public BaseController
-{
+class ApplicationController : public BaseController {
     Q_OBJECT
 
 public:
@@ -31,7 +30,7 @@ public:
      * @brief Get the application model
      * @return The application model
      */
-    ApplicationModel* getApplicationModel() const;
+    ApplicationModel *getApplicationModel() const;
 
     /**
      * @brief Set the main window view
@@ -43,7 +42,7 @@ public:
      * @brief Get the main window view
      * @return The main window
      */
-    MainWindow* getMainWindow() const;
+    MainWindow *getMainWindow() const;
 
     /**
      * @brief Initialize the application
@@ -64,7 +63,8 @@ public:
 protected:
     bool initializeController() override;
     void connectModelAndView() override;
-    bool handleControllerAction(const QString &actionName, const QVariant &data) override;
+    bool handleControllerAction(const QString &actionName,
+                                const QVariant &data) override;
     bool validateController() const override;
     void updateControllerState() override;
     void onModelDataChanged() override;

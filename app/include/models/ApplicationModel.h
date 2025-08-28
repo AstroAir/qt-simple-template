@@ -1,17 +1,16 @@
 #pragma once
 
-#include "models/BaseModel.h"
-#include <QString>
 #include <QDateTime>
+#include <QString>
+#include "models/BaseModel.h"
 
 /**
  * @brief Main application model
- * 
+ *
  * This model represents the main application state and data.
  * It manages application-wide settings and information.
  */
-class ApplicationModel : public BaseModel
-{
+class ApplicationModel : public BaseModel {
     Q_OBJECT
 
 public:
@@ -58,8 +57,10 @@ protected:
     bool initializeModel() override;
     bool validateModel() const override;
     void resetModel() override;
-    bool beforePropertySet(const QString &propertyName, const QVariant &value) override;
-    void afterPropertySet(const QString &propertyName, const QVariant &oldValue, const QVariant &newValue) override;
+    bool beforePropertySet(const QString &propertyName,
+                           const QVariant &value) override;
+    void afterPropertySet(const QString &propertyName, const QVariant &oldValue,
+                          const QVariant &newValue) override;
 
 signals:
     /**

@@ -35,19 +35,23 @@ qt-simple-template is a modern Qt6 application template designed to provide:
 
 - **IDE**: Qt Creator, Visual Studio, CLion, or VS Code
 - **Version Control**: Git
+- **Language Server**: clangd (for enhanced IDE support)
+- **Code Quality**: pre-commit (automated code quality checks)
 - **Static Analysis**: clang-tidy, cppcheck
 - **Documentation**: Doxygen
 - **Testing**: Qt Test framework
 
 ## Project Structure
 
-```
+```text
 qt-simple-template/
 ├── CMakeLists.txt              # Main CMake configuration
 ├── CMakePresets.json           # CMake presets for different platforms
 ├── vcpkg.json                  # Dependency configuration
 ├── vcpkg-configuration.json    # vcpkg registry configuration
 ├── .clang-format              # Code formatting rules
+├── .clangd                    # clangd language server configuration
+├── .pre-commit-config.yaml    # Pre-commit hooks configuration
 ├── .gitignore                 # Git ignore patterns
 ├── LICENSE                    # Project license
 ├── README.md                  # Project overview
@@ -284,6 +288,116 @@ python scripts/run_tests.py --type unit
 - **Testing** - Verify functionality
 - **Documentation** - Update documentation
 - **Merge** - Integration into main branch
+
+## Development Environment Setup
+
+### clangd Language Server
+
+The project includes a `.clangd` configuration file optimized for Qt6 development. clangd provides enhanced IDE features like code completion, diagnostics, and navigation.
+
+#### Installation
+
+**Windows:**
+```bash
+# Using MSYS2
+pacman -S mingw-w64-x86_64-clang-tools-extra
+
+# Or download from LLVM releases
+# https://github.com/llvm/llvm-project/releases
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get install clangd-15
+sudo update-alternatives --install /usr/bin/clangd clangd /usr/bin/clangd-15 100
+```
+
+**macOS:**
+```bash
+brew install llvm
+```
+
+#### IDE Configuration
+
+**VS Code:**
+1. Install the "clangd" extension
+2. Disable the Microsoft C/C++ extension for this workspace
+3. The `.clangd` file will be automatically detected
+
+**Qt Creator:**
+1. Go to Tools → Options → C++ → Code Model
+2. Set "Code model backend" to "Clangd"
+3. Restart Qt Creator
+
+**CLion:**
+1. Go to File → Settings → Languages & Frameworks → C/C++ → Clangd
+2. Enable "Use clangd as language engine"
+3. The configuration will be automatically detected
+
+#### Compilation Database
+
+The project automatically generates `compile_commands.json` when you configure with CMake. This file contains compilation information that clangd uses to understand your code.
+
+```bash
+# The compilation database is generated automatically when you build
+cmake --preset Debug-Windows  # or your preferred preset
+```
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks for automated code quality checks. These hooks run automatically before each commit to ensure code quality and consistency.
+
+#### Installation
+
+**Install pre-commit:**
+```bash
+# Using pip
+pip install pre-commit
+
+# Using conda
+conda install -c conda-forge pre-commit
+
+# Using homebrew (macOS)
+brew install pre-commit
+```
+
+#### Setup
+
+1. **Install the hooks:**
+   ```bash
+   pre-commit install
+   ```
+
+2. **Run hooks manually (optional):**
+   ```bash
+   # Run on all files
+   pre-commit run --all-files
+
+   # Run on staged files only
+   pre-commit run
+   ```
+
+#### Configured Hooks
+
+The project includes the following pre-commit hooks:
+
+- **clang-format** - C++ code formatting using the project's `.clang-format` configuration
+- **clang-tidy** - Static analysis with Qt-specific checks
+- **cppcheck** - Additional static analysis
+- **cmake-format** - CMake file formatting
+- **yamllint** - YAML file linting
+- **General hooks** - Trailing whitespace, end-of-file fixes, JSON/YAML validation
+
+#### Troubleshooting
+
+**Hook failures:**
+- Most formatting issues are automatically fixed by the hooks
+- For clang-tidy issues, review the suggestions and fix manually
+- Use `git commit --no-verify` to bypass hooks temporarily (not recommended)
+
+**Performance:**
+- First run may be slow as tools are downloaded and compilation database is generated
+- Subsequent runs are much faster due to caching
 
 ### Community
 

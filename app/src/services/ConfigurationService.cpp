@@ -1,24 +1,18 @@
 #include "services/ConfigurationService.h"
-#include <QStandardPaths>
-#include <QDir>
 #include <QDebug>
+#include <QDir>
+#include <QStandardPaths>
 
 ConfigurationService::ConfigurationService(QObject *parent)
-    : IService(parent)
-    , m_settings(nullptr)
-    , m_running(false)
-{
-}
+    : IService(parent), m_settings(nullptr), m_running(false) {}
 
-bool ConfigurationService::initialize()
-{
+bool ConfigurationService::initialize() {
     setupSettings();
     initializeDefaults();
     return true;
 }
 
-bool ConfigurationService::start()
-{
+bool ConfigurationService::start() {
     if (m_running) {
         return true;
     }
@@ -33,8 +27,7 @@ bool ConfigurationService::start()
     return true;
 }
 
-void ConfigurationService::stop()
-{
+void ConfigurationService::stop() {
     if (!m_running) {
         return;
     }
@@ -44,18 +37,13 @@ void ConfigurationService::stop()
     emit serviceStopped();
 }
 
-bool ConfigurationService::isRunning() const
-{
-    return m_running;
-}
+bool ConfigurationService::isRunning() const { return m_running; }
 
-QString ConfigurationService::getServiceName() const
-{
+QString ConfigurationService::getServiceName() const {
     return tr("Configuration Service");
 }
 
-QVariant ConfigurationService::getConfiguration(const QString &key) const
-{
+QVariant ConfigurationService::getConfiguration(const QString &key) const {
     // First check cache
     if (m_cache.contains(key)) {
         return m_cache.value(key);
@@ -69,8 +57,8 @@ QVariant ConfigurationService::getConfiguration(const QString &key) const
     return QVariant();
 }
 
-bool ConfigurationService::setConfiguration(const QString &key, const QVariant &value)
-{
+bool ConfigurationService::setConfiguration(const QString &key,
+                                            const QVariant &value) {
     QVariant oldValue = getConfiguration(key);
 
     // Update cache
@@ -83,23 +71,21 @@ bool ConfigurationService::setConfiguration(const QString &key, const QVariant &
 
     // Emit signals
     emit configurationChanged(key, value);
-    
+
     return true;
 }
 
-QVariant ConfigurationService::getConfiguration(const QString &key, const QVariant &defaultValue) const
-{
+QVariant ConfigurationService::getConfiguration(
+    const QString &key, const QVariant &defaultValue) const {
     QVariant value = getConfiguration(key);
     return value.isValid() ? value : defaultValue;
 }
 
-bool ConfigurationService::hasConfiguration(const QString &key) const
-{
+bool ConfigurationService::hasConfiguration(const QString &key) const {
     return m_cache.contains(key) || (m_settings && m_settings->contains(key));
 }
 
-bool ConfigurationService::removeConfiguration(const QString &key)
-{
+bool ConfigurationService::removeConfiguration(const QString &key) {
     // Remove from cache
     m_cache.remove(key);
 
@@ -112,8 +98,7 @@ bool ConfigurationService::removeConfiguration(const QString &key)
     return true;
 }
 
-QStringList ConfigurationService::getAllKeys() const
-{
+QStringList ConfigurationService::getAllKeys() const {
     QStringList keys;
 
     // Add keys from cache
@@ -129,8 +114,7 @@ QStringList ConfigurationService::getAllKeys() const
     return keys;
 }
 
-void ConfigurationService::clearConfiguration()
-{
+void ConfigurationService::clearConfiguration() {
     m_cache.clear();
 
     if (m_settings) {
@@ -140,8 +124,7 @@ void ConfigurationService::clearConfiguration()
     emit configurationChanged(QString(), QVariant());
 }
 
-bool ConfigurationService::saveConfiguration()
-{
+bool ConfigurationService::saveConfiguration() {
     if (!m_settings) {
         return false;
     }
@@ -157,8 +140,7 @@ bool ConfigurationService::saveConfiguration()
     return true;
 }
 
-bool ConfigurationService::loadConfiguration()
-{
+bool ConfigurationService::loadConfiguration() {
     if (!m_settings) {
         return false;
     }
@@ -174,15 +156,13 @@ bool ConfigurationService::loadConfiguration()
     return true;
 }
 
-void ConfigurationService::resetToDefaults()
-{
+void ConfigurationService::resetToDefaults() {
     clearConfiguration();
     initializeDefaults();
     emit configurationReset();
 }
 
-void ConfigurationService::setConfigurationFile(const QString &filePath)
-{
+void ConfigurationService::setConfigurationFile(const QString &filePath) {
     if (m_configurationFile == filePath) {
         return;
     }
@@ -191,37 +171,34 @@ void ConfigurationService::setConfigurationFile(const QString &filePath)
     setupSettings();
 }
 
-QString ConfigurationService::getConfigurationFile() const
-{
+QString ConfigurationService::getConfigurationFile() const {
     return m_configurationFile;
 }
 
-void ConfigurationService::initializeDefaults()
-{
+void ConfigurationService::initializeDefaults() {
     // Set default configuration values
     if (!hasConfiguration("application/theme")) {
         setConfiguration("application/theme", "default");
     }
-    
+
     if (!hasConfiguration("application/language")) {
         setConfiguration("application/language", "en");
     }
-    
+
     if (!hasConfiguration("window/width")) {
         setConfiguration("window/width", 1000);
     }
-    
+
     if (!hasConfiguration("window/height")) {
         setConfiguration("window/height", 700);
     }
-    
+
     if (!hasConfiguration("window/maximized")) {
         setConfiguration("window/maximized", false);
     }
 }
 
-void ConfigurationService::setupSettings()
-{
+void ConfigurationService::setupSettings() {
     // Clean up old settings
     if (m_settings) {
         delete m_settings;
@@ -234,6 +211,7 @@ void ConfigurationService::setupSettings()
         m_settings = new QSettings(this);
     } else {
         // Use custom configuration file
-        m_settings = new QSettings(m_configurationFile, QSettings::IniFormat, this);
+        m_settings =
+            new QSettings(m_configurationFile, QSettings::IniFormat, this);
     }
 }

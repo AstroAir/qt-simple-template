@@ -1,17 +1,16 @@
 #pragma once
 
 #include <QObject>
-#include <QVariant>
 #include <QString>
+#include <QVariant>
 
 /**
  * @brief Base interface for all model classes
- * 
+ *
  * This interface defines the common contract that all model classes
  * should implement in the MVC architecture.
  */
-class IModel : public QObject
-{
+class IModel : public QObject {
     Q_OBJECT
 
 public:
@@ -43,7 +42,8 @@ public:
      * @param value The new value
      * @return true if the property was set successfully
      */
-    virtual bool setProperty(const QString &propertyName, const QVariant &value) = 0;
+    virtual bool setProperty(const QString &propertyName,
+                             const QVariant &value) = 0;
 
     /**
      * @brief Reset the model to its default state

@@ -1,41 +1,35 @@
 #pragma once
 
+#include <QDateTime>
+#include <QFile>
+#include <QMutex>
 #include <QObject>
 #include <QString>
 #include <QTextStream>
-#include <QFile>
-#include <QMutex>
-#include <QDateTime>
 
 /**
  * @brief Logging utility class
- * 
+ *
  * This class provides centralized logging functionality
  * with support for different log levels and output destinations.
  */
-class Logger : public QObject
-{
+class Logger : public QObject {
     Q_OBJECT
 
 public:
-    enum LogLevel {
-        Debug = 0,
-        Info = 1,
-        Warning = 2,
-        Error = 3,
-        Critical = 4
-    };
+    enum LogLevel { Debug = 0, Info = 1, Warning = 2, Error = 3, Critical = 4 };
     Q_ENUM(LogLevel)
 
-    static Logger* instance();
-    
+    static Logger *instance();
+
     /**
      * @brief Initialize the logger
      * @param logFilePath Path to the log file (optional)
      * @param logLevel Minimum log level to output
      * @return true if initialization was successful
      */
-    bool initialize(const QString &logFilePath = QString(), LogLevel logLevel = Info);
+    bool initialize(const QString &logFilePath = QString(),
+                    LogLevel logLevel = Info);
 
     /**
      * @brief Set the minimum log level
@@ -91,7 +85,8 @@ public:
      * @param message The message to log
      * @param category Optional category for the message
      */
-    void log(LogLevel level, const QString &message, const QString &category = QString());
+    void log(LogLevel level, const QString &message,
+             const QString &category = QString());
 
     /**
      * @brief Log a debug message
@@ -148,7 +143,8 @@ signals:
      * @param category The category
      * @param timestamp The timestamp
      */
-    void messageLogged(LogLevel level, const QString &message, const QString &category, const QDateTime &timestamp);
+    void messageLogged(LogLevel level, const QString &message,
+                       const QString &category, const QDateTime &timestamp);
 
 private:
     explicit Logger(QObject *parent = nullptr);
@@ -156,7 +152,8 @@ private:
 
     void writeToConsole(const QString &formattedMessage);
     void writeToFile(const QString &formattedMessage);
-    QString formatMessage(LogLevel level, const QString &message, const QString &category, const QDateTime &timestamp);
+    QString formatMessage(LogLevel level, const QString &message,
+                          const QString &category, const QDateTime &timestamp);
 
     static Logger *s_instance;
     static QMutex s_mutex;

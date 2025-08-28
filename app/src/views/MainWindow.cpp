@@ -1,55 +1,53 @@
 #include "views/MainWindow.h"
-#include "models/ApplicationModel.h"
-#include "interfaces/IController.h"
+#include <QAction>
 #include <QApplication>
-#include <QVBoxLayout>
+#include <QCloseEvent>
+#include <QDebug>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QMenuBar>
+#include <QMessageBox>
+#include <QProgressBar>
+#include <QPushButton>
+#include <QShowEvent>
 #include <QStatusBar>
 #include <QToolBar>
-#include <QAction>
-#include <QPushButton>
-#include <QLabel>
-#include <QProgressBar>
-#include <QMessageBox>
-#include <QCloseEvent>
-#include <QShowEvent>
-#include <QDebug>
+#include <QVBoxLayout>
+#include "interfaces/IController.h"
+#include "models/ApplicationModel.h"
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , m_centralWidget(nullptr)
-    , m_menuBar(nullptr)
-    , m_toolBar(nullptr)
-    , m_statusBar(nullptr)
-    , m_newAction(nullptr)
-    , m_openAction(nullptr)
-    , m_saveAction(nullptr)
-    , m_exitAction(nullptr)
-    , m_aboutAction(nullptr)
-    , m_aboutQtAction(nullptr)
-    , m_titleLabel(nullptr)
-    , m_infoLabel(nullptr)
-    , m_testButton(nullptr)
-    , m_statusLabel(nullptr)
-    , m_progressBar(nullptr)
-    , m_controller(nullptr)
-    , m_applicationModel(nullptr)
-    , m_initialized(false)
-{
+    : QMainWindow(parent),
+      m_centralWidget(nullptr),
+      m_menuBar(nullptr),
+      m_toolBar(nullptr),
+      m_statusBar(nullptr),
+      m_newAction(nullptr),
+      m_openAction(nullptr),
+      m_saveAction(nullptr),
+      m_exitAction(nullptr),
+      m_aboutAction(nullptr),
+      m_aboutQtAction(nullptr),
+      m_titleLabel(nullptr),
+      m_infoLabel(nullptr),
+      m_testButton(nullptr),
+      m_statusLabel(nullptr),
+      m_progressBar(nullptr),
+      m_controller(nullptr),
+      m_applicationModel(nullptr),
+      m_initialized(false) {
     setWindowTitle(tr("Qt Simple Template"));
     setMinimumSize(800, 600);
     resize(1000, 700);
 }
 
-bool MainWindow::initialize()
-{
+bool MainWindow::initialize() {
     if (m_initialized) {
         return true;
     }
 
     bool result = initializeUI();
-    
+
     if (result) {
         connectSignals();
         m_initialized = true;
@@ -59,8 +57,7 @@ bool MainWindow::initialize()
     return result;
 }
 
-void MainWindow::setController(IController *controller)
-{
+void MainWindow::setController(IController *controller) {
     if (m_controller == controller) {
         return;
     }
@@ -74,22 +71,18 @@ void MainWindow::setController(IController *controller)
 
     // Connect to new controller
     if (m_controller) {
-        connect(m_controller, &IController::stateChanged,
-                this, &MainWindow::updateView);
-        connect(m_controller, &IController::errorOccurred,
-                this, &MainWindow::showError);
-        connect(m_controller, &IController::operationCompleted,
-                this, &MainWindow::showInfo);
+        connect(m_controller, &IController::stateChanged, this,
+                &MainWindow::updateView);
+        connect(m_controller, &IController::errorOccurred, this,
+                &MainWindow::showError);
+        connect(m_controller, &IController::operationCompleted, this,
+                &MainWindow::showInfo);
     }
 }
 
-IController* MainWindow::getController() const
-{
-    return m_controller;
-}
+IController *MainWindow::getController() const { return m_controller; }
 
-void MainWindow::updateView()
-{
+void MainWindow::updateView() {
     if (!m_initialized) {
         return;
     }
@@ -98,20 +91,17 @@ void MainWindow::updateView()
     emit viewUpdateRequested();
 }
 
-void MainWindow::showError(const QString &message)
-{
+void MainWindow::showError(const QString &message) {
     QMessageBox::critical(this, tr("Error"), message);
 }
 
-void MainWindow::showInfo(const QString &message)
-{
+void MainWindow::showInfo(const QString &message) {
     if (!message.isEmpty()) {
         QMessageBox::information(this, tr("Information"), message);
     }
 }
 
-void MainWindow::setViewEnabled(bool enabled)
-{
+void MainWindow::setViewEnabled(bool enabled) {
     setEnabled(enabled);
     if (m_toolBar) {
         m_toolBar->setEnabled(enabled);
@@ -121,13 +111,11 @@ void MainWindow::setViewEnabled(bool enabled)
     }
 }
 
-bool MainWindow::isViewValid() const
-{
+bool MainWindow::isViewValid() const {
     return m_initialized && m_centralWidget != nullptr;
 }
 
-void MainWindow::setApplicationModel(ApplicationModel *model)
-{
+void MainWindow::setApplicationModel(ApplicationModel *model) {
     if (m_applicationModel == model) {
         return;
     }
@@ -141,26 +129,24 @@ void MainWindow::setApplicationModel(ApplicationModel *model)
 
     // Connect to new model
     if (m_applicationModel) {
-        connect(m_applicationModel, &ApplicationModel::dataChanged,
-                this, &MainWindow::onApplicationModelChanged);
-        connect(m_applicationModel, &ApplicationModel::statusChanged,
-                this, &MainWindow::onStatusChanged);
-        connect(m_applicationModel, &ApplicationModel::busyStateChanged,
-                this, &MainWindow::onBusyStateChanged);
-        connect(m_applicationModel, &ApplicationModel::themeChanged,
-                this, &MainWindow::onThemeChanged);
+        connect(m_applicationModel, &ApplicationModel::dataChanged, this,
+                &MainWindow::onApplicationModelChanged);
+        connect(m_applicationModel, &ApplicationModel::statusChanged, this,
+                &MainWindow::onStatusChanged);
+        connect(m_applicationModel, &ApplicationModel::busyStateChanged, this,
+                &MainWindow::onBusyStateChanged);
+        connect(m_applicationModel, &ApplicationModel::themeChanged, this,
+                &MainWindow::onThemeChanged);
     }
 
     updateView();
 }
 
-ApplicationModel* MainWindow::getApplicationModel() const
-{
+ApplicationModel *MainWindow::getApplicationModel() const {
     return m_applicationModel;
 }
 
-bool MainWindow::initializeUI()
-{
+bool MainWindow::initializeUI() {
     // Create actions
     createActions();
 
@@ -173,8 +159,7 @@ bool MainWindow::initializeUI()
     return true;
 }
 
-void MainWindow::setupMenuBar()
-{
+void MainWindow::setupMenuBar() {
     m_menuBar = menuBar();
 
     // File menu
@@ -191,8 +176,7 @@ void MainWindow::setupMenuBar()
     helpMenu->addAction(m_aboutQtAction);
 }
 
-void MainWindow::setupToolBar()
-{
+void MainWindow::setupToolBar() {
     m_toolBar = addToolBar(tr("Main"));
     m_toolBar->addAction(m_newAction);
     m_toolBar->addAction(m_openAction);
@@ -200,21 +184,19 @@ void MainWindow::setupToolBar()
     m_toolBar->addSeparator();
 }
 
-void MainWindow::setupStatusBar()
-{
+void MainWindow::setupStatusBar() {
     m_statusBar = statusBar();
-    
+
     m_statusLabel = new QLabel(tr("Ready"));
     m_statusBar->addWidget(m_statusLabel);
-    
+
     m_progressBar = new QProgressBar();
     m_progressBar->setVisible(false);
     m_progressBar->setMaximumWidth(200);
     m_statusBar->addPermanentWidget(m_progressBar);
 }
 
-void MainWindow::setupCentralWidget()
-{
+void MainWindow::setupCentralWidget() {
     m_centralWidget = new QWidget(this);
     setCentralWidget(m_centralWidget);
 
@@ -225,143 +207,122 @@ void MainWindow::setupCentralWidget()
     // Title
     m_titleLabel = new QLabel(tr("Qt Simple Template"), this);
     m_titleLabel->setAlignment(Qt::AlignCenter);
-    m_titleLabel->setStyleSheet("QLabel { font-size: 24px; font-weight: bold; color: #2c3e50; }");
+    m_titleLabel->setStyleSheet(
+        "QLabel { font-size: 24px; font-weight: bold; color: #2c3e50; }");
     layout->addWidget(m_titleLabel);
 
     // Info label
-    m_infoLabel = new QLabel(tr("Welcome to the Qt Simple Template application!"), this);
+    m_infoLabel =
+        new QLabel(tr("Welcome to the Qt Simple Template application!"), this);
     m_infoLabel->setAlignment(Qt::AlignCenter);
     m_infoLabel->setWordWrap(true);
-    m_infoLabel->setStyleSheet("QLabel { font-size: 14px; color: #7f8c8d; margin: 20px; }");
+    m_infoLabel->setStyleSheet(
+        "QLabel { font-size: 14px; color: #7f8c8d; margin: 20px; }");
     layout->addWidget(m_infoLabel);
 
     // Test button
     m_testButton = new QPushButton(tr("Test Action"), this);
     m_testButton->setMinimumHeight(40);
-    m_testButton->setStyleSheet("QPushButton { font-size: 14px; padding: 10px; }");
-    
+    m_testButton->setStyleSheet(
+        "QPushButton { font-size: 14px; padding: 10px; }");
+
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addStretch();
     buttonLayout->addWidget(m_testButton);
     buttonLayout->addStretch();
-    
+
     layout->addLayout(buttonLayout);
     layout->addStretch();
 }
 
-void MainWindow::connectSignals()
-{
+void MainWindow::connectSignals() {
     // Connect actions
     connect(m_newAction, &QAction::triggered, this, &MainWindow::onNewAction);
     connect(m_openAction, &QAction::triggered, this, &MainWindow::onOpenAction);
     connect(m_saveAction, &QAction::triggered, this, &MainWindow::onSaveAction);
     connect(m_exitAction, &QAction::triggered, this, &MainWindow::onExitAction);
-    connect(m_aboutAction, &QAction::triggered, this, &MainWindow::onAboutAction);
-    connect(m_aboutQtAction, &QAction::triggered, this, &MainWindow::onAboutQtAction);
+    connect(m_aboutAction, &QAction::triggered, this,
+            &MainWindow::onAboutAction);
+    connect(m_aboutQtAction, &QAction::triggered, this,
+            &MainWindow::onAboutQtAction);
 
     // Connect test button
-    connect(m_testButton, &QPushButton::clicked, this, &MainWindow::onTestButtonClicked);
+    connect(m_testButton, &QPushButton::clicked, this,
+            &MainWindow::onTestButtonClicked);
 }
 
-void MainWindow::updateContent()
-{
+void MainWindow::updateContent() {
     updateWindowTitle();
     updateStatusBar();
 }
 
-void MainWindow::closeEvent(QCloseEvent *event)
-{
+void MainWindow::closeEvent(QCloseEvent *event) {
     emit viewClosing();
     QMainWindow::closeEvent(event);
 }
 
-void MainWindow::showEvent(QShowEvent *event)
-{
+void MainWindow::showEvent(QShowEvent *event) {
     QMainWindow::showEvent(event);
     if (m_initialized) {
         updateView();
     }
 }
 
-void MainWindow::onNewAction()
-{
-    emit userAction("new");
-}
+void MainWindow::onNewAction() { emit userAction("new"); }
 
-void MainWindow::onOpenAction()
-{
-    emit userAction("open");
-}
+void MainWindow::onOpenAction() { emit userAction("open"); }
 
-void MainWindow::onSaveAction()
-{
-    emit userAction("save");
-}
+void MainWindow::onSaveAction() { emit userAction("save"); }
 
-void MainWindow::onExitAction()
-{
-    close();
-}
+void MainWindow::onExitAction() { close(); }
 
-void MainWindow::onAboutAction()
-{
-    QString aboutText = tr(
-        "<h3>Qt Simple Template</h3>"
-        "<p>A comprehensive Qt6 application template with modern build system.</p>"
-        "<p>Features:</p>"
-        "<ul>"
-        "<li>MVC Architecture</li>"
-        "<li>Multi-platform packaging</li>"
-        "<li>Package manager priority system</li>"
-        "<li>Comprehensive documentation</li>"
-        "</ul>"
-        "<p>Version: %1</p>"
-    ).arg(m_applicationModel ? m_applicationModel->getAppVersion() : "Unknown");
+void MainWindow::onAboutAction() {
+    QString aboutText =
+        tr("<h3>Qt Simple Template</h3>"
+           "<p>A comprehensive Qt6 application template with modern build "
+           "system.</p>"
+           "<p>Features:</p>"
+           "<ul>"
+           "<li>MVC Architecture</li>"
+           "<li>Multi-platform packaging</li>"
+           "<li>Package manager priority system</li>"
+           "<li>Comprehensive documentation</li>"
+           "</ul>"
+           "<p>Version: %1</p>")
+            .arg(m_applicationModel ? m_applicationModel->getAppVersion()
+                                    : "Unknown");
 
     QMessageBox::about(this, tr("About Qt Simple Template"), aboutText);
 }
 
-void MainWindow::onAboutQtAction()
-{
-    QMessageBox::aboutQt(this);
-}
+void MainWindow::onAboutQtAction() { QMessageBox::aboutQt(this); }
 
-void MainWindow::onTestButtonClicked()
-{
+void MainWindow::onTestButtonClicked() {
     emit userAction("test", tr("Test button was clicked!"));
 }
 
-void MainWindow::onApplicationModelChanged()
-{
-    updateView();
-}
+void MainWindow::onApplicationModelChanged() { updateView(); }
 
-void MainWindow::onStatusChanged(const QString &message)
-{
+void MainWindow::onStatusChanged(const QString &message) {
     if (m_statusLabel) {
         m_statusLabel->setText(message);
     }
 }
 
-void MainWindow::onBusyStateChanged(bool busy)
-{
+void MainWindow::onBusyStateChanged(bool busy) {
     if (m_progressBar) {
         m_progressBar->setVisible(busy);
         if (busy) {
-            m_progressBar->setRange(0, 0); // Indeterminate progress
+            m_progressBar->setRange(0, 0);  // Indeterminate progress
         }
     }
 
     setViewEnabled(!busy);
 }
 
-void MainWindow::onThemeChanged(const QString &theme)
-{
-    applyTheme(theme);
-}
+void MainWindow::onThemeChanged(const QString &theme) { applyTheme(theme); }
 
-void MainWindow::createActions()
-{
+void MainWindow::createActions() {
     m_newAction = new QAction(QIcon(":/icons/new.png"), tr("&New"), this);
     m_newAction->setShortcut(QKeySequence::New);
     m_newAction->setStatusTip(tr("Create a new file"));
@@ -385,8 +346,7 @@ void MainWindow::createActions()
     m_aboutQtAction->setStatusTip(tr("Show information about Qt"));
 }
 
-void MainWindow::updateWindowTitle()
-{
+void MainWindow::updateWindowTitle() {
     QString title = tr("Qt Simple Template");
 
     if (m_applicationModel) {
@@ -404,8 +364,7 @@ void MainWindow::updateWindowTitle()
     setWindowTitle(title);
 }
 
-void MainWindow::updateStatusBar()
-{
+void MainWindow::updateStatusBar() {
     if (!m_applicationModel || !m_statusLabel) {
         return;
     }
@@ -418,8 +377,7 @@ void MainWindow::updateStatusBar()
     m_statusLabel->setText(status);
 }
 
-void MainWindow::applyTheme(const QString &theme)
-{
+void MainWindow::applyTheme(const QString &theme) {
     QString styleSheet;
 
     if (theme == "dark") {

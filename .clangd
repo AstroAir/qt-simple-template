@@ -1,0 +1,113 @@
+---
+# clangd configuration for Qt6 C++ development
+# This file configures the clangd language server for optimal Qt development experience
+
+# Compilation database
+CompileFlags:
+  # Add common Qt-specific flags that might be missing from compile_commands.json
+  Add:
+    # Qt-specific defines
+    - -DQT_NO_KEYWORDS  # Avoid conflicts with Qt keywords
+    - -DQT_NO_CAST_FROM_ASCII
+    - -DQT_NO_CAST_TO_ASCII
+    - -DQT_STRICT_ITERATORS
+    
+    # Modern C++ features
+    - -std=c++20
+    
+    # Additional warning flags for better diagnostics
+    - -Wno-unknown-warning-option  # Suppress warnings about unknown warning options
+    - -Wno-unused-parameter        # Qt often has unused parameters in slots
+    - -Wno-gnu-zero-variadic-macro-arguments  # Qt macros can trigger this
+    
+  # Remove problematic flags that might cause issues with clangd
+  Remove:
+    - -fmodules-ts  # Can cause issues with clangd indexing
+    - -fmodule-mapper=*  # Module mapper flags
+    - -fdeps-format=*    # Dependency format flags
+    - -MD                # Dependency generation
+    - -MF                # Dependency file output
+    - -MT                # Dependency target
+    - -MQ                # Dependency target (quoted)
+
+# Index configuration
+Index:
+  # Background indexing for better performance
+  Background: Build
+  
+  # Standard library indexing
+  StandardLibrary: Yes
+  
+  # Skip indexing of system headers to improve performance
+  SkipSystemHeaders: false
+
+# Diagnostics configuration
+Diagnostics:
+  # Suppress common Qt-related warnings that are not useful
+  Suppress:
+    - "unused-parameter"           # Qt slots often have unused parameters
+    - "missing-prototypes"         # Qt MOC generates code without prototypes
+    - "unused-member-function"     # Qt slots might appear unused
+    - "unknown-pragmas"            # Qt uses various pragmas
+    - "gnu-zero-variadic-macro-arguments"  # Qt macros
+    
+  # Enable additional checks that are useful for Qt development
+  ClangTidy:
+    Add:
+      - "readability-*"
+      - "modernize-*"
+      - "performance-*"
+      - "bugprone-*"
+      - "cppcoreguidelines-*"
+    Remove:
+      - "modernize-use-trailing-return-type"  # Not Qt style
+      - "readability-magic-numbers"           # Qt often uses magic numbers
+      - "cppcoreguidelines-avoid-magic-numbers"
+      - "cppcoreguidelines-pro-type-vararg"   # Qt uses varargs
+      - "cppcoreguidelines-pro-bounds-array-to-pointer-decay"
+
+# Completion configuration
+Completion:
+  # Include all headers for better completion
+  AllScopes: true
+  
+  # Show more completion items
+  Limit: 100
+
+# Hover configuration
+Hover:
+  # Show more detailed information on hover
+  ShowAKA: true
+
+# Cross-references configuration
+CrossFileRename: true
+
+# Semantic highlighting
+SemanticHighlighting: true
+
+# Inlay hints configuration
+InlayHints:
+  # Show parameter names in function calls
+  Parameters: true
+  
+  # Show deduced types
+  DeducedTypes: true
+  
+  # Show return types for auto functions
+  TypeNameLimit: 24
+
+# Format configuration (uses .clang-format file)
+# No specific format configuration needed as we have .clang-format
+
+# Specific Qt-related path configurations
+# Note: These paths will be automatically detected from compile_commands.json
+# but can be added here if needed for fallback
+
+# Performance tuning for large Qt projects
+# Limit memory usage and improve responsiveness
+MemoryLimit: 8192  # 8GB limit for indexing
+
+# Enable experimental features that help with Qt development
+Features:
+  # Enable support for Qt's signal/slot mechanism
+  # This is handled automatically by clangd's Qt support

@@ -6,12 +6,11 @@
 
 /**
  * @brief Base interface for all service classes
- * 
+ *
  * This interface defines the common contract that all service classes
  * should implement. Services provide business logic and data access.
  */
-class IService : public QObject
-{
+class IService : public QObject {
     Q_OBJECT
 
 public:
@@ -60,7 +59,8 @@ public:
      * @param value The configuration value
      * @return true if the configuration was set successfully
      */
-    virtual bool setConfiguration(const QString &key, const QVariant &value) = 0;
+    virtual bool setConfiguration(const QString &key,
+                                  const QVariant &value) = 0;
 
 signals:
     /**

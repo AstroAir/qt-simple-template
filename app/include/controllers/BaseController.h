@@ -1,19 +1,18 @@
 #pragma once
 
-#include "interfaces/IController.h"
 #include <QObject>
+#include "interfaces/IController.h"
 
 class IModel;
 class IView;
 
 /**
  * @brief Base implementation of IController interface
- * 
+ *
  * This class provides a basic implementation of the IController interface
  * with common controller functionality and MVC coordination.
  */
-class BaseController : public IController
-{
+class BaseController : public IController {
     Q_OBJECT
 
 public:
@@ -23,10 +22,11 @@ public:
     // IController interface implementation
     bool initialize() override;
     void setModel(IModel *model) override;
-    IModel* getModel() const override;
+    IModel *getModel() const override;
     void setView(IView *view) override;
-    IView* getView() const override;
-    void handleUserAction(const QString &actionName, const QVariant &data = QVariant()) override;
+    IView *getView() const override;
+    void handleUserAction(const QString &actionName,
+                          const QVariant &data = QVariant()) override;
     void updateView() override;
     bool isValid() const override;
 
@@ -51,7 +51,8 @@ protected:
      * @param data Optional data associated with the action
      * @return true if the action was handled
      */
-    virtual bool handleControllerAction(const QString &actionName, const QVariant &data);
+    virtual bool handleControllerAction(const QString &actionName,
+                                        const QVariant &data);
 
     /**
      * @brief Validate the controller state

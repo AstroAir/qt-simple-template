@@ -1,22 +1,19 @@
 #include "controllers/ApplicationController.h"
-#include "models/ApplicationModel.h"
-#include "views/MainWindow.h"
-#include <QTimer>
+#include <QCoreApplication>
 #include <QDebug>
 #include <QThread>
-#include <QCoreApplication>
+#include <QTimer>
+#include "models/ApplicationModel.h"
+#include "views/MainWindow.h"
 
 ApplicationController::ApplicationController(QObject *parent)
-    : BaseController(parent)
-    , m_applicationModel(nullptr)
-    , m_mainWindow(nullptr)
-    , m_statusTimer(nullptr)
-    , m_applicationStarted(false)
-{
-}
+    : BaseController(parent),
+      m_applicationModel(nullptr),
+      m_mainWindow(nullptr),
+      m_statusTimer(nullptr),
+      m_applicationStarted(false) {}
 
-void ApplicationController::setApplicationModel(ApplicationModel *model)
-{
+void ApplicationController::setApplicationModel(ApplicationModel *model) {
     if (m_applicationModel == model) {
         return;
     }
@@ -27,32 +24,30 @@ void ApplicationController::setApplicationModel(ApplicationModel *model)
     }
 
     m_applicationModel = model;
-    setModel(model); // Set in base class
+    setModel(model);  // Set in base class
 
     // Connect to application-specific signals
     if (m_applicationModel) {
-        connect(m_applicationModel, &ApplicationModel::statusChanged,
-                this, &ApplicationController::onApplicationModelStatusChanged);
-        connect(m_applicationModel, &ApplicationModel::busyStateChanged,
-                this, &ApplicationController::onApplicationModelBusyStateChanged);
-        connect(m_applicationModel, &ApplicationModel::themeChanged,
-                this, &ApplicationController::onApplicationModelThemeChanged);
+        connect(m_applicationModel, &ApplicationModel::statusChanged, this,
+                &ApplicationController::onApplicationModelStatusChanged);
+        connect(m_applicationModel, &ApplicationModel::busyStateChanged, this,
+                &ApplicationController::onApplicationModelBusyStateChanged);
+        connect(m_applicationModel, &ApplicationModel::themeChanged, this,
+                &ApplicationController::onApplicationModelThemeChanged);
     }
 }
 
-ApplicationModel* ApplicationController::getApplicationModel() const
-{
+ApplicationModel *ApplicationController::getApplicationModel() const {
     return m_applicationModel;
 }
 
-void ApplicationController::setMainWindow(MainWindow *mainWindow)
-{
+void ApplicationController::setMainWindow(MainWindow *mainWindow) {
     if (m_mainWindow == mainWindow) {
         return;
     }
 
     m_mainWindow = mainWindow;
-    setView(mainWindow); // Set in base class
+    setView(mainWindow);  // Set in base class
 
     // Set the application model in the main window
     if (m_mainWindow && m_applicationModel) {
@@ -60,13 +55,11 @@ void ApplicationController::setMainWindow(MainWindow *mainWindow)
     }
 }
 
-MainWindow* ApplicationController::getMainWindow() const
-{
+MainWindow *ApplicationController::getMainWindow() const {
     return m_mainWindow;
 }
 
-bool ApplicationController::initializeApplication()
-{
+bool ApplicationController::initializeApplication() {
     if (!m_applicationModel || !m_mainWindow) {
         emitError(tr("Application model or main window not set"));
         return false;
@@ -96,8 +89,7 @@ bool ApplicationController::initializeApplication()
     return true;
 }
 
-void ApplicationController::startApplication()
-{
+void ApplicationController::startApplication() {
     if (m_applicationStarted) {
         return;
     }
@@ -118,8 +110,7 @@ void ApplicationController::startApplication()
     emitOperationCompleted(tr("Application started successfully"));
 }
 
-void ApplicationController::stopApplication()
-{
+void ApplicationController::stopApplication() {
     if (!m_applicationStarted) {
         return;
     }
@@ -138,23 +129,21 @@ void ApplicationController::stopApplication()
     updateApplicationStatus(tr("Application stopped"));
 }
 
-bool ApplicationController::initializeController()
-{
+bool ApplicationController::initializeController() {
     // Setup status timer
     setupStatusTimer();
 
     return BaseController::initializeController();
 }
 
-void ApplicationController::connectModelAndView()
-{
+void ApplicationController::connectModelAndView() {
     BaseController::connectModelAndView();
 
     // Additional connections can be made here if needed
 }
 
-bool ApplicationController::handleControllerAction(const QString &actionName, const QVariant &data)
-{
+bool ApplicationController::handleControllerAction(const QString &actionName,
+                                                   const QVariant &data) {
     if (actionName == "new") {
         onNewAction();
         return true;
@@ -172,15 +161,12 @@ bool ApplicationController::handleControllerAction(const QString &actionName, co
     return BaseController::handleControllerAction(actionName, data);
 }
 
-bool ApplicationController::validateController() const
-{
-    return BaseController::validateController() && 
-           m_applicationModel != nullptr && 
-           m_mainWindow != nullptr;
+bool ApplicationController::validateController() const {
+    return BaseController::validateController() &&
+           m_applicationModel != nullptr && m_mainWindow != nullptr;
 }
 
-void ApplicationController::updateControllerState()
-{
+void ApplicationController::updateControllerState() {
     BaseController::updateControllerState();
 
     // Update application-specific state
@@ -189,8 +175,7 @@ void ApplicationController::updateControllerState()
     }
 }
 
-void ApplicationController::onModelDataChanged()
-{
+void ApplicationController::onModelDataChanged() {
     BaseController::onModelDataChanged();
 
     // Handle application model changes
@@ -199,82 +184,74 @@ void ApplicationController::onModelDataChanged()
     }
 }
 
-void ApplicationController::onViewUpdateRequested()
-{
+void ApplicationController::onViewUpdateRequested() {
     BaseController::onViewUpdateRequested();
 }
 
-void ApplicationController::onViewClosing()
-{
+void ApplicationController::onViewClosing() {
     stopApplication();
     BaseController::onViewClosing();
 }
 
-void ApplicationController::onNewAction()
-{
+void ApplicationController::onNewAction() {
     updateApplicationStatus(tr("Creating new document..."));
-    
+
     // Simulate some work
     QThread::msleep(500);
-    
+
     updateApplicationStatus(tr("New document created"));
     emitOperationCompleted(tr("New document created successfully"));
 }
 
-void ApplicationController::onOpenAction()
-{
+void ApplicationController::onOpenAction() {
     updateApplicationStatus(tr("Opening document..."));
-    
+
     // Simulate some work
     QThread::msleep(800);
-    
+
     updateApplicationStatus(tr("Document opened"));
     emitOperationCompleted(tr("Document opened successfully"));
 }
 
-void ApplicationController::onSaveAction()
-{
+void ApplicationController::onSaveAction() {
     updateApplicationStatus(tr("Saving document..."));
-    
+
     // Simulate some work
     QThread::msleep(600);
-    
+
     updateApplicationStatus(tr("Document saved"));
     emitOperationCompleted(tr("Document saved successfully"));
 }
 
-void ApplicationController::onTestAction(const QVariant &data)
-{
+void ApplicationController::onTestAction(const QVariant &data) {
     QString message = data.toString();
     if (message.isEmpty()) {
         message = tr("Test action performed");
     }
-    
+
     updateApplicationStatus(tr("Performing test action..."));
     performTestOperation();
     updateApplicationStatus(message);
-    
+
     emitOperationCompleted(message);
 }
 
-void ApplicationController::onApplicationModelStatusChanged(const QString &message)
-{
+void ApplicationController::onApplicationModelStatusChanged(
+    const QString &message) {
     qDebug() << "Application status changed:" << message;
 }
 
-void ApplicationController::onApplicationModelBusyStateChanged(bool busy)
-{
+void ApplicationController::onApplicationModelBusyStateChanged(bool busy) {
     qDebug() << "Application busy state changed:" << busy;
 }
 
-void ApplicationController::onApplicationModelThemeChanged(const QString &theme)
-{
+void ApplicationController::onApplicationModelThemeChanged(
+    const QString &theme) {
     qDebug() << "Application theme changed:" << theme;
     updateApplicationStatus(tr("Theme changed to: %1").arg(theme));
 }
 
-void ApplicationController::onStatusUpdateTimer()
-{
+void ApplicationController::onStatusUpdateTimer() {
     if (m_applicationModel) {
         QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
         // Don't update status if the application is busy
@@ -284,65 +261,59 @@ void ApplicationController::onStatusUpdateTimer()
     }
 }
 
-void ApplicationController::setupStatusTimer()
-{
+void ApplicationController::setupStatusTimer() {
     if (!m_statusTimer) {
         m_statusTimer = new QTimer(this);
-        connect(m_statusTimer, &QTimer::timeout,
-                this, &ApplicationController::onStatusUpdateTimer);
+        connect(m_statusTimer, &QTimer::timeout, this,
+                &ApplicationController::onStatusUpdateTimer);
     }
-    
-    m_statusTimer->start(30000); // Update every 30 seconds
+
+    m_statusTimer->start(30000);  // Update every 30 seconds
 }
 
-void ApplicationController::performTestOperation()
-{
+void ApplicationController::performTestOperation() {
     // Simulate a test operation
     if (m_applicationModel) {
         m_applicationModel->setBusy(true);
     }
-    
-    QThread::msleep(1000); // Simulate work
-    
+
+    QThread::msleep(1000);  // Simulate work
+
     if (m_applicationModel) {
         m_applicationModel->setBusy(false);
     }
 }
 
-void ApplicationController::simulateLongOperation()
-{
+void ApplicationController::simulateLongOperation() {
     if (m_applicationModel) {
         m_applicationModel->setBusy(true);
     }
-    
+
     updateApplicationStatus(tr("Performing long operation..."));
-    QThread::msleep(3000); // Simulate long work
-    
+    QThread::msleep(3000);  // Simulate long work
+
     if (m_applicationModel) {
         m_applicationModel->setBusy(false);
     }
-    
+
     updateApplicationStatus(tr("Long operation completed"));
 }
 
-void ApplicationController::loadApplicationSettings()
-{
+void ApplicationController::loadApplicationSettings() {
     if (m_applicationModel) {
         m_applicationModel->loadSettings();
         updateApplicationStatus(tr("Settings loaded"));
     }
 }
 
-void ApplicationController::saveApplicationSettings()
-{
+void ApplicationController::saveApplicationSettings() {
     if (m_applicationModel) {
         m_applicationModel->saveSettings();
         updateApplicationStatus(tr("Settings saved"));
     }
 }
 
-void ApplicationController::updateApplicationStatus(const QString &message)
-{
+void ApplicationController::updateApplicationStatus(const QString &message) {
     if (m_applicationModel) {
         m_applicationModel->updateStatus(message);
     }

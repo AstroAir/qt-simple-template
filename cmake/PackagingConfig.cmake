@@ -10,7 +10,7 @@ if(WIN32)
             HINTS "$ENV{MSYSTEM_PREFIX}/bin"
             PATHS
             "$ENV{ProgramFiles}/NSIS"
-            "$ENV{ProgramFiles(x86)}/NSIS"
+            "$ENV{ProgramFiles\(x86\)}/NSIS"
             DOC "NSIS executable"
         )
 
@@ -43,7 +43,7 @@ if(WIN32)
         find_program(NSIS_EXECUTABLE makensis
             PATHS
             "$ENV{ProgramFiles}/NSIS"
-            "$ENV{ProgramFiles(x86)}/NSIS"
+            "$ENV{ProgramFiles\(x86\)}/NSIS"
             DOC "NSIS executable"
         )
 
@@ -64,7 +64,7 @@ if(WIN32)
     find_program(CANDLE_EXECUTABLE candle
         PATHS
         "$ENV{ProgramFiles}/WiX Toolset v3.11/bin"
-        "$ENV{ProgramFiles(x86)}/WiX Toolset v3.11/bin"
+        "$ENV{ProgramFiles\(x86\)}/WiX Toolset v3.11/bin"
         "$ENV{WIX}/bin"
         DOC "WiX candle.exe executable"
     )
@@ -72,7 +72,7 @@ if(WIN32)
     find_program(LIGHT_EXECUTABLE light
         PATHS
         "$ENV{ProgramFiles}/WiX Toolset v3.11/bin"
-        "$ENV{ProgramFiles(x86)}/WiX Toolset v3.11/bin"
+        "$ENV{ProgramFiles\(x86\)}/WiX Toolset v3.11/bin"
         "$ENV{WIX}/bin"
         DOC "WiX light.exe executable"
     )
@@ -462,7 +462,7 @@ add_custom_target(package_portable
 )
 
 # Source package
-add_custom_target(package_source
+add_custom_target(package_src
     COMMAND ${CMAKE_COMMAND} -E tar czf ${PROJECT_NAME}-${PROJECT_VERSION}-source.tar.gz
         --exclude=.git
         --exclude=build
@@ -541,7 +541,7 @@ if(BINARYCREATOR_EXECUTABLE)
     add_dependencies(package_all package_qtifw)
 endif()
 
-add_dependencies(package_all package_portable package_source)
+add_dependencies(package_all package_portable package_src)
 
 # Cross-platform and container packaging
 
