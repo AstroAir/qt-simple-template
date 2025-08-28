@@ -1,0 +1,62 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+  - cron: '0 0 * * *'  # Daily at midnight UTC
+  workflow_dispatch:
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+    - uses: actions/stale@v8
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        
+        # Issues
+        stale-issue-message: |
+          This issue has been automatically marked as stale because it has not had recent activity. 
+          It will be closed if no further activity occurs. Thank you for your contributions.
+        close-issue-message: |
+          This issue has been automatically closed due to inactivity. 
+          If you believe this issue is still relevant, please reopen it with additional information.
+        days-before-issue-stale: 60
+        days-before-issue-close: 7
+        
+        # Pull Requests
+        stale-pr-message: |
+          This pull request has been automatically marked as stale because it has not had recent activity. 
+          It will be closed if no further activity occurs. Thank you for your contributions.
+        close-pr-message: |
+          This pull request has been automatically closed due to inactivity. 
+          If you believe this PR is still relevant, please reopen it and address any conflicts.
+        days-before-pr-stale: 30
+        days-before-pr-close: 7
+        
+        # Labels
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
+        exempt-issue-labels: 'pinned,security,bug,enhancement,good first issue'
+        exempt-pr-labels: 'pinned,security,work-in-progress'
+        
+        # Only issues/PRs with these labels will be marked as stale
+        only-labels: ''
+        
+        # Remove stale label when there's activity
+        remove-stale-when-updated: true
+        
+        # Debugging
+        debug-only: false
+        
+        # Operations per run (to avoid rate limiting)
+        operations-per-run: 100
+        
+        # Custom messages for different types
+        stale-issue-label: 'stale'
+        close-issue-label: 'auto-closed'
+        stale-pr-label: 'stale'
+        close-pr-label: 'auto-closed'

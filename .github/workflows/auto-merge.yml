@@ -1,0 +1,75 @@
+name: Auto-merge
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, synchronize, opened, edited, ready_for_review, reopened]
+
+jobs:
+  auto-merge:
+    name: Auto-merge dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Check if PR is ready for auto-merge
+      id: check-ready
+      run: |
+        # Check if PR has required labels and status checks
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        
+        # Get PR details
+        PR_DETAILS=$(gh pr view $PR_NUMBER --json labels,statusCheckRollupState,reviewDecision)
+        
+        # Check if all status checks pass
+        STATUS_STATE=$(echo "$PR_DETAILS" | jq -r '.statusCheckRollupState')
+        REVIEW_DECISION=$(echo "$PR_DETAILS" | jq -r '.reviewDecision')
+        
+        echo "Status state: $STATUS_STATE"
+        echo "Review decision: $REVIEW_DECISION"
+        
+        if [ "$STATUS_STATE" = "SUCCESS" ] && ([ "$REVIEW_DECISION" = "APPROVED" ] || [ "$REVIEW_DECISION" = "null" ]); then
+          echo "ready=true" >> $GITHUB_OUTPUT
+        else
+          echo "ready=false" >> $GITHUB_OUTPUT
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Auto-merge minor updates
+      if: steps.check-ready.outputs.ready == 'true'
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        
+        # Auto-merge for minor version updates and patch updates
+        if echo "$PR_TITLE" | grep -E "(patch|minor|build|ci|deps)" > /dev/null; then
+          echo "Auto-merging dependabot PR: $PR_TITLE"
+          gh pr merge $PR_NUMBER --auto --squash
+        else
+          echo "PR requires manual review: $PR_TITLE"
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  auto-approve:
+    name: Auto-approve safe dependabot PRs
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Auto-approve safe updates
+      run: |
+        PR_NUMBER=${{ github.event.pull_request.number }}
+        PR_TITLE="${{ github.event.pull_request.title }}"
+        
+        # Auto-approve patch updates and CI updates
+        if echo "$PR_TITLE" | grep -E "(patch|build|ci)" > /dev/null; then
+          echo "Auto-approving safe dependabot PR: $PR_TITLE"
+          gh pr review $PR_NUMBER --approve --body "Auto-approved safe dependency update"
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

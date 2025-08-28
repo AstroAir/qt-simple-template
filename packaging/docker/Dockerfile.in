@@ -1,0 +1,107 @@
+# Multi-stage Docker build for Qt Simple Template
+# Stage 1: Build environment
+FROM ubuntu:22.04 AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    ninja-build \
+    qt6-base-dev \
+    qt6-svg-dev \
+    qt6-tools-dev \
+    libqt6core6 \
+    libqt6gui6 \
+    libqt6widgets6 \
+    libqt6svg6 \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /src
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN cmake -S . -B build \
+    -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_DOCS=OFF \
+    && cmake --build build \
+    && cmake --install build --prefix /app
+
+# Stage 2: Runtime environment
+FROM ubuntu:22.04 AS runtime
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libqt6core6 \
+    libqt6gui6 \
+    libqt6widgets6 \
+    libqt6svg6 \
+    qt6-qpa-plugins \
+    libxkbcommon0 \
+    libxcb-xinerama0 \
+    libxcb-cursor0 \
+    libfontconfig1 \
+    libfreetype6 \
+    libx11-6 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrender1 \
+    libxrandr2 \
+    libxss1 \
+    libxtst6 \
+    libxv1 \
+    libxxf86vm1 \
+    libasound2 \
+    libpulse0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create application user
+RUN useradd -m -s /bin/bash qtapp
+
+# Copy application from builder stage
+COPY --from=builder /app /usr
+COPY --from=builder /src/assets /usr/share/@PROJECT_NAME@/assets
+
+# Set up environment
+ENV QT_QPA_PLATFORM=xcb
+ENV QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt6/plugins
+ENV QT_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt6/plugins
+ENV LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/qt6/lib:$LD_LIBRARY_PATH
+
+# Create desktop entry
+RUN mkdir -p /usr/share/applications && \
+    echo "[Desktop Entry]" > /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Name=@PROJECT_NAME@" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Comment=A simple Qt6 application template" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Exec=@PROJECT_NAME@" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Icon=/usr/share/@PROJECT_NAME@/assets/images/icon.png" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Terminal=false" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Type=Application" >> /usr/share/applications/@PROJECT_NAME@.desktop && \
+    echo "Categories=Utility;Development;" >> /usr/share/applications/@PROJECT_NAME@.desktop
+
+# Switch to application user
+USER qtapp
+WORKDIR /home/qtapp
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD @PROJECT_NAME@ --version || exit 1
+
+# Default command
+CMD ["@PROJECT_NAME@"]
+
+# Labels
+LABEL org.opencontainers.image.title="@PROJECT_NAME@"
+LABEL org.opencontainers.image.description="A comprehensive Qt6 application template"
+LABEL org.opencontainers.image.version="@PROJECT_VERSION@"
+LABEL org.opencontainers.image.vendor="Qt Simple Template Developers"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.source="https://github.com/example/qt-simple-template"
+LABEL org.opencontainers.image.documentation="https://github.com/example/qt-simple-template/blob/main/README.md"

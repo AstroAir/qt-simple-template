@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" 
+           Name="@PROJECT_NAME@" 
+           Language="1033" 
+           Version="@PROJECT_VERSION@.0" 
+           Manufacturer="Qt Simple Template Developers" 
+           UpgradeCode="12345678-1234-1234-1234-123456789012">
+    
+    <Package InstallerVersion="200" 
+             Compressed="yes" 
+             InstallScope="perMachine" 
+             Description="@PROJECT_NAME@ @PROJECT_VERSION@ Installer"
+             Comments="A simple Qt6 application template" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="@PROJECT_NAME@" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+      <ComponentRef Id="ApplicationShortcut" />
+      <ComponentRef Id="DesktopShortcut" />
+    </Feature>
+
+    <!-- Directory structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="@PROJECT_NAME@" />
+      </Directory>
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="@PROJECT_NAME@" />
+      </Directory>
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+    <!-- Application components -->
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="MainExecutable" Guid="*">
+        <File Id="MainExe" 
+              Source="$(var.InstallDir)\bin\@PROJECT_NAME@.exe" 
+              KeyPath="yes" 
+              Checksum="yes">
+          <Shortcut Id="StartMenuShortcut"
+                    Directory="ApplicationProgramsFolder"
+                    Name="@PROJECT_NAME@"
+                    Description="A simple Qt6 application template"
+                    WorkingDirectory="INSTALLFOLDER"
+                    Icon="AppIcon.exe"
+                    IconIndex="0" />
+        </File>
+      </Component>
+      
+      <!-- Qt6 DLLs -->
+      <Component Id="Qt6Core" Guid="*">
+        <File Source="$(var.InstallDir)\bin\Qt6Core.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Qt6Gui" Guid="*">
+        <File Source="$(var.InstallDir)\bin\Qt6Gui.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Qt6Widgets" Guid="*">
+        <File Source="$(var.InstallDir)\bin\Qt6Widgets.dll" KeyPath="yes" />
+      </Component>
+      <Component Id="Qt6Svg" Guid="*">
+        <File Source="$(var.InstallDir)\bin\Qt6Svg.dll" KeyPath="yes" />
+      </Component>
+      
+      <!-- Qt6 Platforms -->
+      <Component Id="Qt6Platforms" Guid="*">
+        <CreateFolder />
+        <File Source="$(var.InstallDir)\bin\platforms\qwindows.dll" KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+    <!-- Application shortcut -->
+    <Component Id="ApplicationShortcut" Directory="ApplicationProgramsFolder" Guid="*">
+      <Shortcut Id="ApplicationStartMenuShortcut"
+                Name="@PROJECT_NAME@"
+                Description="A simple Qt6 application template"
+                Target="[#MainExe]"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+      <RegistryValue Root="HKCU" 
+                     Key="Software\@PROJECT_NAME@" 
+                     Name="installed" 
+                     Type="integer" 
+                     Value="1" 
+                     KeyPath="yes" />
+    </Component>
+
+    <!-- Desktop shortcut -->
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="*">
+      <Shortcut Id="DesktopShortcut"
+                Name="@PROJECT_NAME@"
+                Description="A simple Qt6 application template"
+                Target="[#MainExe]"
+                WorkingDirectory="INSTALLFOLDER" />
+      <RegistryValue Root="HKCU" 
+                     Key="Software\@PROJECT_NAME@" 
+                     Name="desktop_shortcut" 
+                     Type="integer" 
+                     Value="1" 
+                     KeyPath="yes" />
+    </Component>
+
+    <!-- Icon -->
+    <Icon Id="AppIcon.exe" SourceFile="$(var.InstallDir)\bin\@PROJECT_NAME@.exe" />
+
+    <!-- Add/Remove Programs properties -->
+    <Property Id="ARPPRODUCTICON" Value="AppIcon.exe" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/example/@PROJECT_NAME@" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/example/@PROJECT_NAME@" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+
+    <!-- UI -->
+    <UIRef Id="WixUI_InstallDir" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    
+    <!-- License -->
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.SourceDir)\packaging\wix\License.rtf" />
+    
+  </Product>
+</Wix>

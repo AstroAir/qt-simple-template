@@ -1,0 +1,196 @@
+name: MSYS2 CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  msys2-build:
+    name: MSYS2 - ${{ matrix.config.name }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "MINGW64 Debug",
+              msystem: "MINGW64",
+              build_type: "Debug",
+              preset: "MSYS2-Debug"
+            }
+          - {
+              name: "MINGW64 Release",
+              msystem: "MINGW64", 
+              build_type: "Release",
+              preset: "MSYS2-Release"
+            }
+          - {
+              name: "UCRT64 Debug",
+              msystem: "UCRT64",
+              build_type: "Debug",
+              preset: "MSYS2-Debug"
+            }
+          - {
+              name: "UCRT64 Release",
+              msystem: "UCRT64",
+              build_type: "Release", 
+              preset: "MSYS2-Release"
+            }
+          - {
+              name: "CLANG64 Debug",
+              msystem: "CLANG64",
+              build_type: "Debug",
+              preset: "MSYS2-Debug"
+            }
+          - {
+              name: "CLANG64 Release",
+              msystem: "CLANG64",
+              build_type: "Release",
+              preset: "MSYS2-Release"
+            }
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.config.msystem }}
+        update: true
+        install: >-
+          base-devel
+          git
+          cmake
+          ninja
+          pkg-config
+
+    - name: Install Qt6 packages (MINGW64)
+      if: matrix.config.msystem == 'MINGW64'
+      run: |
+        pacman -S --needed --noconfirm \
+          mingw-w64-x86_64-toolchain \
+          mingw-w64-x86_64-qt6-base \
+          mingw-w64-x86_64-qt6-svg \
+          mingw-w64-x86_64-qt6-tools
+
+    - name: Install Qt6 packages (UCRT64)
+      if: matrix.config.msystem == 'UCRT64'
+      run: |
+        pacman -S --needed --noconfirm \
+          mingw-w64-ucrt-x86_64-toolchain \
+          mingw-w64-ucrt-x86_64-qt6-base \
+          mingw-w64-ucrt-x86_64-qt6-svg \
+          mingw-w64-ucrt-x86_64-qt6-tools
+
+    - name: Install Qt6 packages (CLANG64)
+      if: matrix.config.msystem == 'CLANG64'
+      run: |
+        pacman -S --needed --noconfirm \
+          mingw-w64-clang-x86_64-toolchain \
+          mingw-w64-clang-x86_64-qt6-base \
+          mingw-w64-clang-x86_64-qt6-svg \
+          mingw-w64-clang-x86_64-qt6-tools
+
+    - name: Configure CMake
+      run: |
+        if [ -f "CMakePresets-extended.json" ]; then
+          cmake --preset ${{ matrix.config.preset }} --preset-file CMakePresets-extended.json
+        else
+          mkdir -p build/MSYS2-${{ matrix.config.build_type }}
+          cmake -S . -B build/MSYS2-${{ matrix.config.build_type }} \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -DBUILD_TESTING=ON \
+            -DBUILD_DOCS=ON
+        fi
+
+    - name: Build
+      run: |
+        if [ -f "CMakePresets-extended.json" ]; then
+          cmake --build --preset ${{ matrix.config.preset }} --preset-file CMakePresets-extended.json
+        else
+          cmake --build build/MSYS2-${{ matrix.config.build_type }}
+        fi
+
+    - name: Test
+      run: |
+        cd build/MSYS2-${{ matrix.config.build_type }}
+        ctest --output-on-failure --parallel 4
+      env:
+        QT_QPA_PLATFORM: offscreen
+
+    - name: Package (Release builds)
+      if: matrix.config.build_type == 'Release'
+      run: |
+        cd build/MSYS2-${{ matrix.config.build_type }}
+        cmake --build . --target package || true
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: msys2-${{ matrix.config.msystem }}-${{ matrix.config.build_type }}-${{ github.run_number }}
+        path: |
+          build/MSYS2-*/app/
+          build/MSYS2-*/lib/
+          build/MSYS2-*/*.exe
+          build/MSYS2-*/*.zip
+          build/MSYS2-*/*.tar.gz
+        retention-days: 7
+
+  msys2-cross-test:
+    name: MSYS2 Cross-Environment Test
+    runs-on: windows-latest
+    needs: msys2-build
+    
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        update: true
+        install: >-
+          base-devel
+          git
+          cmake
+          ninja
+          pkg-config
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-qt6-base
+          mingw-w64-x86_64-qt6-svg
+          mingw-w64-x86_64-qt6-tools
+
+    - name: Test build script
+      run: |
+        chmod +x scripts/build_msys2.sh
+        ./scripts/build_msys2.sh --build-type Debug --configure-only
+
+    - name: Test template customization with MSYS2
+      run: |
+        python scripts/customize_template.py \
+          --project-name "msys2_test" \
+          --app-name "MSYS2 Test App" \
+          --author-name "MSYS2 CI" \
+          --skip-commands
+
+    - name: Build customized template
+      run: |
+        ./scripts/build_msys2.sh --build-type Debug --test
+
+    - name: Restore original files
+      run: |
+        git checkout CMakeLists.txt vcpkg.json README.md LICENSE app/config.h.in

@@ -1,0 +1,205 @@
+{
+  "template": {
+    "name": "qt-simple-template",
+    "version": "1.0.0",
+    "description": "A modern Qt6 application template with CMake, vcpkg, and CI/CD",
+    "author": "Template Author",
+    "license": "MIT",
+    "repository": "https://github.com/your-org/qt-simple-template"
+  },
+  "variables": {
+    "PROJECT_NAME": {
+      "description": "Technical project name (used in CMake, no spaces)",
+      "type": "string",
+      "default": "qt_simple_template",
+      "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$",
+      "required": true
+    },
+    "APP_NAME": {
+      "description": "User-friendly application name (displayed to users)",
+      "type": "string", 
+      "default": "Qt Simple Template",
+      "required": true
+    },
+    "PROJECT_DESCRIPTION": {
+      "description": "Brief description of your project",
+      "type": "string",
+      "default": "A Qt6 application built from qt-simple-template",
+      "required": true
+    },
+    "AUTHOR_NAME": {
+      "description": "Author or organization name",
+      "type": "string",
+      "default": "Your Name",
+      "required": true
+    },
+    "AUTHOR_EMAIL": {
+      "description": "Contact email address",
+      "type": "string",
+      "default": "your.email@example.com",
+      "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+      "required": false
+    },
+    "PROJECT_WEBSITE": {
+      "description": "Project website or repository URL",
+      "type": "string",
+      "default": "https://github.com/your-org/your-project",
+      "required": false
+    },
+    "PROJECT_VERSION": {
+      "description": "Initial project version",
+      "type": "string",
+      "default": "1.0.0",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "required": true
+    },
+    "COPYRIGHT_YEAR": {
+      "description": "Copyright year",
+      "type": "string",
+      "default": "2025",
+      "pattern": "^\\d{4}$",
+      "required": true
+    },
+    "LICENSE_TYPE": {
+      "description": "License type for the project",
+      "type": "choice",
+      "choices": ["MIT", "Apache-2.0", "GPL-3.0", "BSD-3-Clause", "Custom"],
+      "default": "MIT",
+      "required": true
+    },
+    "ENABLE_TESTING": {
+      "description": "Include testing infrastructure",
+      "type": "boolean",
+      "default": true,
+      "required": false
+    },
+    "ENABLE_DOCS": {
+      "description": "Include documentation structure",
+      "type": "boolean", 
+      "default": true,
+      "required": false
+    },
+    "ENABLE_I18N": {
+      "description": "Include internationalization support",
+      "type": "boolean",
+      "default": true,
+      "required": false
+    },
+    "ENABLE_THEMES": {
+      "description": "Include theme switching functionality",
+      "type": "boolean",
+      "default": true,
+      "required": false
+    },
+    "QT_VERSION": {
+      "description": "Minimum Qt version requirement",
+      "type": "choice",
+      "choices": ["6.2", "6.3", "6.4", "6.5", "6.6", "6.7"],
+      "default": "6.2",
+      "required": true
+    },
+    "CMAKE_VERSION": {
+      "description": "Minimum CMake version requirement",
+      "type": "choice",
+      "choices": ["3.20", "3.21", "3.22", "3.23", "3.24", "3.25", "3.26", "3.27", "3.28"],
+      "default": "3.28",
+      "required": true
+    },
+    "CPP_STANDARD": {
+      "description": "C++ standard version",
+      "type": "choice",
+      "choices": ["17", "20", "23"],
+      "default": "20",
+      "required": true
+    },
+    "PACKAGE_MANAGER": {
+      "description": "Package manager to use",
+      "type": "choice",
+      "choices": ["vcpkg", "conan", "msys2", "system"],
+      "default": "vcpkg",
+      "required": false
+    },
+    "COMPILER_TOOLCHAIN": {
+      "description": "Compiler toolchain preference",
+      "type": "choice",
+      "choices": ["auto", "msvc", "gcc", "clang", "mingw"],
+      "default": "auto",
+      "required": false
+    }
+  },
+  "files": {
+    "templates": [
+      {
+        "source": "CMakeLists.txt.template",
+        "target": "CMakeLists.txt",
+        "variables": ["PROJECT_NAME", "PROJECT_VERSION", "CMAKE_VERSION", "CPP_STANDARD"]
+      },
+      {
+        "source": "vcpkg.json.template", 
+        "target": "vcpkg.json",
+        "variables": ["PROJECT_NAME", "PROJECT_VERSION", "PROJECT_DESCRIPTION", "PROJECT_WEBSITE", "LICENSE_TYPE"]
+      },
+      {
+        "source": "README.md.template",
+        "target": "README.md", 
+        "variables": ["PROJECT_NAME", "APP_NAME", "PROJECT_DESCRIPTION", "AUTHOR_NAME"]
+      },
+      {
+        "source": "LICENSE.template",
+        "target": "LICENSE",
+        "variables": ["COPYRIGHT_YEAR", "AUTHOR_NAME"]
+      },
+      {
+        "source": "app/config.h.in.template",
+        "target": "app/config.h.in",
+        "variables": ["PROJECT_NAME", "APP_NAME"]
+      }
+    ],
+    "conditional": [
+      {
+        "condition": "ENABLE_TESTING == false",
+        "action": "remove",
+        "paths": ["tests/", "scripts/run_tests.*"]
+      },
+      {
+        "condition": "ENABLE_DOCS == false", 
+        "action": "remove",
+        "paths": ["docs/"]
+      },
+      {
+        "condition": "ENABLE_I18N == false",
+        "action": "remove",
+        "paths": ["app/i18n/"]
+      },
+      {
+        "condition": "ENABLE_THEMES == false",
+        "action": "modify",
+        "description": "Remove theme-related code and assets"
+      }
+    ]
+  },
+  "post_generation": [
+    {
+      "description": "Initialize Git repository",
+      "command": "git init",
+      "optional": true
+    },
+    {
+      "description": "Install vcpkg dependencies",
+      "command": "vcpkg install",
+      "optional": true
+    },
+    {
+      "description": "Configure CMake",
+      "command": "cmake --preset Debug-Windows",
+      "platform": "windows",
+      "optional": true
+    },
+    {
+      "description": "Configure CMake",
+      "command": "cmake --preset Debug-Unix", 
+      "platform": "unix",
+      "optional": true
+    }
+  ]
+}

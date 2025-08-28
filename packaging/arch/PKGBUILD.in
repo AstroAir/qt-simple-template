@@ -1,0 +1,60 @@
+# Maintainer: Qt Simple Template Developers <developers@example.com>
+pkgname=qt-simple-template
+pkgver=@PROJECT_VERSION@
+pkgrel=1
+pkgdesc="A comprehensive Qt6 application template with modern build system"
+arch=('x86_64' 'aarch64')
+url="https://github.com/example/qt-simple-template"
+license=('MIT')
+depends=('qt6-base' 'qt6-svg')
+makedepends=('cmake' 'ninja' 'qt6-tools')
+optdepends=(
+    'qt6-wayland: Wayland support'
+    'qt6-imageformats: Additional image format support'
+)
+source=("$pkgname-$pkgver.tar.gz::https://github.com/example/$pkgname/archive/v$pkgver.tar.gz")
+sha256sums=('SKIP')  # Replace with actual checksum
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    # Apply any patches here if needed
+}
+
+build() {
+    cd "$pkgname-$pkgver"
+    
+    cmake -S . -B build \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBUILD_TESTING=OFF \
+        -DBUILD_DOCS=ON \
+        -Wno-dev
+    
+    cmake --build build
+}
+
+check() {
+    cd "$pkgname-$pkgver"
+    # Run tests if available
+    # cmake --build build --target test
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    
+    DESTDIR="$pkgdir" cmake --install build
+    
+    # Install license
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    
+    # Install desktop file
+    install -Dm644 "distrib/$pkgname.desktop" "$pkgdir/usr/share/applications/$pkgname.desktop"
+    
+    # Install icon
+    install -Dm644 "assets/images/icon.png" "$pkgdir/usr/share/icons/hicolor/64x64/apps/$pkgname.png"
+    
+    # Install documentation
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+    install -Dm644 CHANGELOG.md "$pkgdir/usr/share/doc/$pkgname/CHANGELOG.md"
+}

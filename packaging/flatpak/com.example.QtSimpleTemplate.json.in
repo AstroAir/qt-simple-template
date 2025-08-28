@@ -1,0 +1,42 @@
+{
+    "app-id": "com.example.QtSimpleTemplate",
+    "runtime": "org.kde.Platform",
+    "runtime-version": "6.6",
+    "sdk": "org.kde.Sdk",
+    "command": "@PROJECT_NAME@",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--device=dri",
+        "--share=network",
+        "--filesystem=home",
+        "--filesystem=xdg-documents",
+        "--filesystem=xdg-pictures",
+        "--filesystem=xdg-music",
+        "--filesystem=xdg-videos",
+        "--filesystem=xdg-download"
+    ],
+    "modules": [
+        {
+            "name": "@PROJECT_NAME@",
+            "buildsystem": "cmake-ninja",
+            "config-opts": [
+                "-DCMAKE_BUILD_TYPE=Release",
+                "-DBUILD_TESTING=OFF",
+                "-DBUILD_DOCS=OFF"
+            ],
+            "sources": [
+                {
+                    "type": "dir",
+                    "path": "../.."
+                }
+            ],
+            "post-install": [
+                "install -Dm644 assets/images/icon.png /app/share/icons/hicolor/64x64/apps/com.example.QtSimpleTemplate.png",
+                "install -Dm644 distrib/com.example.QtSimpleTemplate.desktop /app/share/applications/com.example.QtSimpleTemplate.desktop",
+                "install -Dm644 distrib/com.example.QtSimpleTemplate.metainfo.xml /app/share/metainfo/com.example.QtSimpleTemplate.metainfo.xml"
+            ]
+        }
+    ]
+}

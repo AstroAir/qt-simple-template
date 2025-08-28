@@ -1,0 +1,230 @@
+name: Multi-Platform Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  QT_VERSION: '6.7.0'
+
+jobs:
+  linux-packages:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        package_type: [deb, appimage, snap, flatpak]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        modules: 'qtsvg'
+    
+    - name: Install packaging tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake ninja-build
+        
+        case "${{ matrix.package_type }}" in
+          "deb")
+            sudo apt-get install -y dpkg-dev
+            ;;
+          "appimage")
+            wget -O linuxdeploy https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+            wget -O linuxdeploy-plugin-qt https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+            chmod +x linuxdeploy*
+            sudo mv linuxdeploy* /usr/local/bin/
+            ;;
+          "snap")
+            sudo snap install snapcraft --classic
+            ;;
+          "flatpak")
+            sudo apt-get install -y flatpak flatpak-builder
+            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+            flatpak install -y flathub org.kde.Platform//6.6 org.kde.Sdk//6.6
+            ;;
+        esac
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build package
+      run: cmake --build build --target package_${{ matrix.package_type }}
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: linux-${{ matrix.package_type }}-package
+        path: |
+          build/*.deb
+          build/*.AppImage
+          build/snap/*.snap
+          build/flatpak-repo/
+
+  windows-packages:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        package_type: [nsis, msi, portable]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        modules: 'qtsvg'
+    
+    - name: Install packaging tools
+      run: |
+        if ("${{ matrix.package_type }}" -eq "nsis") {
+          choco install nsis -y
+        }
+        if ("${{ matrix.package_type }}" -eq "msi") {
+          # WiX Toolset is pre-installed on GitHub runners
+        }
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+    
+    - name: Build package
+      run: |
+        cmake --build build --config Release
+        if ("${{ matrix.package_type }}" -eq "portable") {
+          cmake --build build --target package_portable_zip --config Release
+        } else {
+          cmake --build build --target package_${{ matrix.package_type }} --config Release
+        }
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: windows-${{ matrix.package_type }}-package
+        path: |
+          build/*.exe
+          build/*.msi
+          build/*.zip
+
+  macos-packages:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        package_type: [dmg, pkg]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        modules: 'qtsvg'
+    
+    - name: Install packaging tools
+      run: |
+        if [ "${{ matrix.package_type }}" = "dmg" ]; then
+          brew install create-dmg
+        fi
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build package
+      run: cmake --build build --target package_${{ matrix.package_type }}
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: macos-${{ matrix.package_type }}-package
+        path: |
+          build/*.dmg
+          build/*.pkg
+
+  docker-packages:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build Docker image
+      run: cmake --build build --target package_docker
+    
+    - name: Save Docker image
+      run: docker save qt-simple-template:latest | gzip > qt-simple-template-docker.tar.gz
+    
+    - name: Upload Docker image
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-image
+        path: qt-simple-template-docker.tar.gz
+
+  validate-packaging:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        modules: 'qtsvg'
+    
+    - name: Configure CMake
+      run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Validate packaging tools
+      run: |
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          chmod +x scripts/validate_packaging.sh
+          ./scripts/validate_packaging.sh
+        else
+          # Windows validation would need PowerShell equivalent
+          echo "Packaging validation on Windows"
+        fi
+      shell: bash
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux-packages, windows-packages, macos-packages, docker-packages]
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          **/*.deb
+          **/*.rpm
+          **/*.AppImage
+          **/*.snap
+          **/*.exe
+          **/*.msi
+          **/*.zip
+          **/*.dmg
+          **/*.pkg
+          **/*.tar.gz
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

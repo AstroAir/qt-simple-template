@@ -1,0 +1,25 @@
+{
+  "name": "{{PROJECT_NAME}}",
+  "version": "{{PROJECT_VERSION}}",
+  "description": "{{PROJECT_DESCRIPTION}}",
+  "homepage": "{{PROJECT_WEBSITE}}",
+  "license": "{{LICENSE_TYPE}}",
+  "dependencies": [
+    "qtbase",
+    "qtsvg",
+    {
+      "name": "qttools",
+      "features": [
+        "linguist"
+      ]
+    },
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+name: @PROJECT_NAME@
+base: core22
+version: '@PROJECT_VERSION@'
+summary: A simple Qt6 application template
+description: |
+  A comprehensive Qt6 application template with modern build system,
+  multiple package manager support, and cross-platform compatibility.
+
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+apps:
+  @PROJECT_NAME@:
+    command: bin/@PROJECT_NAME@
+    desktop: share/applications/@PROJECT_NAME@.desktop
+    extensions: [gnome]
+    plugs:
+      - home
+      - desktop
+      - desktop-legacy
+      - wayland
+      - x11
+      - opengl
+      - audio-playback
+      - network
+      - removable-media
+
+parts:
+  @PROJECT_NAME@:
+    plugin: cmake
+    source: .
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DBUILD_TESTING=OFF
+      - -DBUILD_DOCS=OFF
+    build-packages:
+      - build-essential
+      - cmake
+      - ninja-build
+      - qt6-base-dev
+      - qt6-svg-dev
+      - qt6-tools-dev
+      - libqt6core6
+      - libqt6gui6
+      - libqt6widgets6
+      - libqt6svg6
+    stage-packages:
+      - libqt6core6
+      - libqt6gui6
+      - libqt6widgets6
+      - libqt6svg6
+      - qt6-qpa-plugins
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libgdk-pixbuf2.0-0
+      - locales-all
+      - xdg-user-dirs
+    override-prime: |
+      craftctl default
+      # Ensure proper permissions
+      chmod +x usr/bin/@PROJECT_NAME@
+      # Create desktop file if it doesn't exist
+      if [ ! -f usr/share/applications/@PROJECT_NAME@.desktop ]; then
+        mkdir -p usr/share/applications
+        cat > usr/share/applications/@PROJECT_NAME@.desktop << EOF
+      [Desktop Entry]
+      Name=@PROJECT_NAME@
+      Comment=A simple Qt6 application template
+      Exec=@PROJECT_NAME@
+      Icon=\${SNAP}/usr/share/icons/hicolor/64x64/apps/@PROJECT_NAME@.png
+      Terminal=false
+      Type=Application
+      Categories=Utility;Development;
+      EOF
+      fi
+
+layout:
+  /usr/share/X11:
+    bind: $SNAP/usr/share/X11
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/qt6

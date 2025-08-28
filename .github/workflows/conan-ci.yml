@@ -1,0 +1,195 @@
+name: Conan CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  CONAN_VERSION: 2.0.17
+
+jobs:
+  conan-build:
+    name: Conan - ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Windows MSVC",
+              os: windows-latest,
+              preset: "Conan-Debug-Windows",
+              build_preset: "Conan-Debug-Windows",
+              conan_profile: "default"
+            }
+          - {
+              name: "Windows MSVC Release",
+              os: windows-latest,
+              preset: "Conan-Release-Windows",
+              build_preset: "Conan-Release-Windows",
+              conan_profile: "default"
+            }
+          - {
+              name: "Ubuntu GCC",
+              os: ubuntu-latest,
+              preset: "Conan-Debug-Unix",
+              build_preset: "Conan-Debug-Unix",
+              conan_profile: "default"
+            }
+          - {
+              name: "Ubuntu GCC Release",
+              os: ubuntu-latest,
+              preset: "Conan-Release-Unix",
+              build_preset: "Conan-Release-Unix",
+              conan_profile: "default"
+            }
+          - {
+              name: "macOS Clang",
+              os: macos-latest,
+              preset: "Conan-Debug-Unix",
+              build_preset: "Conan-Debug-Unix",
+              conan_profile: "default"
+            }
+          - {
+              name: "macOS Clang Release",
+              os: macos-latest,
+              preset: "Conan-Release-Unix",
+              build_preset: "Conan-Release-Unix",
+              conan_profile: "default"
+            }
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Conan
+      run: |
+        pip install conan==${{ env.CONAN_VERSION }}
+        conan --version
+
+    - name: Cache Conan packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.conan2
+        key: conan-${{ runner.os }}-${{ matrix.config.conan_profile }}-${{ hashFiles('conanfile.py', 'conanfile.txt') }}
+        restore-keys: |
+          conan-${{ runner.os }}-${{ matrix.config.conan_profile }}-
+          conan-${{ runner.os }}-
+
+    - name: Create Conan profile
+      run: |
+        conan profile detect --force
+
+    - name: Install system dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          libgl1-mesa-dev \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libxcb-xfixes0 \
+          xvfb
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja
+
+    - name: Setup MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Install Conan dependencies
+      run: |
+        python scripts/build_conan.py --build-type ${{ contains(matrix.config.preset, 'Release') && 'Release' || 'Debug' }} --install-only
+
+    - name: Configure CMake
+      run: |
+        python scripts/build_conan.py --build-type ${{ contains(matrix.config.preset, 'Release') && 'Release' || 'Debug' }} --configure-only
+
+    - name: Build
+      run: |
+        python scripts/build_conan.py --build-type ${{ contains(matrix.config.preset, 'Release') && 'Release' || 'Debug' }}
+
+    - name: Start Xvfb (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+    - name: Test
+      run: |
+        python scripts/build_conan.py --build-type ${{ contains(matrix.config.preset, 'Release') && 'Release' || 'Debug' }} --test
+      env:
+        QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
+        DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: conan-${{ matrix.config.name }}-${{ github.run_number }}
+        path: |
+          build/Conan-*/app/
+          build/Conan-*/lib/
+          !build/Conan-*/app/**/*.pdb
+          !build/Conan-*/lib/**/*.pdb
+        retention-days: 7
+
+  conan-package-test:
+    name: Test Conan Package
+    runs-on: ubuntu-latest
+    needs: conan-build
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install Conan
+      run: |
+        pip install conan==${{ env.CONAN_VERSION }}
+
+    - name: Create Conan profile
+      run: |
+        conan profile detect --force
+
+    - name: Create Conan package
+      run: |
+        conan create . --build=missing
+
+    - name: Test package consumption
+      run: |
+        mkdir test_package_consumption
+        cd test_package_consumption
+        echo 'from conan import ConanFile
+from conan.tools.cmake import cmake_layout
+
+class TestConsumer(ConanFile):
+    settings = "os", "compiler", "build_type", "arch"
+    
+    def requirements(self):
+        self.requires("qt-simple-template/1.0.0")
+    
+    def layout(self):
+        cmake_layout(self)' > conanfile.py
+        
+        conan install . --build=missing

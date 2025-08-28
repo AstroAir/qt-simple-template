@@ -1,5 +1,5 @@
 {
-    "version": 2,
+    "version": 3,
     "configurePresets": [
         {
             "name": "Debug-Unix",
@@ -7,16 +7,26 @@
             "binaryDir": "${sourceDir}/build/Debug",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
             }
         },
         {
             "name": "Release-Unix",
-            "generator": "Ninja", 
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/Release",
             "cacheVariables": {
                 "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
             }
         },
         {
@@ -24,15 +34,177 @@
             "generator": "Visual Studio 17 2022",
             "binaryDir": "${sourceDir}/build/Debug-Windows",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
             }
         },
         {
             "name": "Release-Windows",
             "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/Release-Windows", 
+            "binaryDir": "${sourceDir}/build/Release-Windows",
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "MSYS2-MINGW64-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-MINGW64-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "MINGW64"
+            }
+        },
+        {
+            "name": "MSYS2-MINGW64-Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-MINGW64-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "MINGW64"
+            }
+        },
+        {
+            "name": "MSYS2-UCRT64-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-UCRT64-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "UCRT64"
+            }
+        },
+        {
+            "name": "MSYS2-UCRT64-Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-UCRT64-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "UCRT64"
+            }
+        },
+        {
+            "name": "MSYS2-CLANG64-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-CLANG64-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "CLANG64"
+            }
+        },
+        {
+            "name": "MSYS2-CLANG64-Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-CLANG64-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "$env{MSYSTEM}",
+                "rhs": "CLANG64"
+            }
+        },
+        {
+            "name": "MSYS2-Hybrid-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-Hybrid-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "MSYS2;VCPKG;CONAN",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "inList",
+                "string": "$env{MSYSTEM}",
+                "list": ["MINGW64", "UCRT64", "CLANG64"]
+            }
+        },
+        {
+            "name": "MSYS2-Hybrid-Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-Hybrid-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "MSYS2;VCPKG;CONAN",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            },
+            "condition": {
+                "type": "inList",
+                "string": "$env{MSYSTEM}",
+                "list": ["MINGW64", "UCRT64", "CLANG64"]
             }
         }
     ],
@@ -54,8 +226,136 @@
         },
         {
             "name": "Release-Windows",
-            "configurePreset": "Release-Windows", 
+            "configurePreset": "Release-Windows",
             "configuration": "Release"
+        },
+        {
+            "name": "MSYS2-MINGW64-Debug",
+            "configurePreset": "MSYS2-MINGW64-Debug",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-MINGW64-Release",
+            "configurePreset": "MSYS2-MINGW64-Release",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-UCRT64-Debug",
+            "configurePreset": "MSYS2-UCRT64-Debug",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-UCRT64-Release",
+            "configurePreset": "MSYS2-UCRT64-Release",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-CLANG64-Debug",
+            "configurePreset": "MSYS2-CLANG64-Debug",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-CLANG64-Release",
+            "configurePreset": "MSYS2-CLANG64-Release",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-Hybrid-Debug",
+            "configurePreset": "MSYS2-Hybrid-Debug",
+            "jobs": 8
+        },
+        {
+            "name": "MSYS2-Hybrid-Release",
+            "configurePreset": "MSYS2-Hybrid-Release",
+            "jobs": 8
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "Debug-Unix",
+            "configurePreset": "Debug-Unix",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "Release-Unix",
+            "configurePreset": "Release-Unix",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "Debug-Windows",
+            "configurePreset": "Debug-Windows",
+            "configuration": "Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "Release-Windows",
+            "configurePreset": "Release-Windows",
+            "configuration": "Release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-MINGW64-Debug",
+            "configurePreset": "MSYS2-MINGW64-Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-MINGW64-Release",
+            "configurePreset": "MSYS2-MINGW64-Release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-UCRT64-Debug",
+            "configurePreset": "MSYS2-UCRT64-Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-UCRT64-Release",
+            "configurePreset": "MSYS2-UCRT64-Release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-CLANG64-Debug",
+            "configurePreset": "MSYS2-CLANG64-Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-CLANG64-Release",
+            "configurePreset": "MSYS2-CLANG64-Release",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-Hybrid-Debug",
+            "configurePreset": "MSYS2-Hybrid-Debug",
+            "output": {
+                "outputOnFailure": true
+            }
+        },
+        {
+            "name": "MSYS2-Hybrid-Release",
+            "configurePreset": "MSYS2-Hybrid-Release",
+            "output": {
+                "outputOnFailure": true
+            }
         }
     ]
 }

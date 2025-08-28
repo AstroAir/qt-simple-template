@@ -1,0 +1,105 @@
+# {{APP_NAME}}
+
+{{PROJECT_DESCRIPTION}}
+
+## Features
+
+- **Modern Qt6** - Built with the latest Qt6 framework
+- **Cross-Platform** - Supports Windows, Linux, and macOS
+- **Theme Support** - Light and dark themes with easy switching
+- **Internationalization** - Multi-language support
+- **Modern Build System** - CMake with vcpkg dependency management
+- **Testing** - Comprehensive test suite with Qt Test framework
+- **CI/CD Ready** - GitHub Actions workflows for automated builds
+
+## Quick Start
+
+### Prerequisites
+
+- Qt6 (6.2 or later)
+- CMake (3.28 or later)
+- vcpkg
+- C++20 compatible compiler
+
+### Building
+
+```bash
+# Clone the repository
+git clone {{PROJECT_WEBSITE}}.git
+cd {{PROJECT_NAME}}
+
+# Install dependencies
+vcpkg install
+
+# Configure and build
+cmake --preset Debug-Windows  # Windows
+cmake --preset Debug-Unix     # Linux/macOS
+
+cmake --build build/Debug
+```
+
+### Running
+
+```bash
+# Run the application
+./build/Debug/app/{{PROJECT_NAME}}  # Linux/macOS
+.\build\Debug\app\{{PROJECT_NAME}}.exe  # Windows
+```
+
+## Development
+
+### Project Structure
+
+```
+{{PROJECT_NAME}}/
+├── CMakeLists.txt          # Main CMake configuration
+├── vcpkg.json             # Dependencies
+├── app/                   # Main application
+├── controls/              # Custom UI controls
+├── assets/                # Resources (images, styles)
+├── tests/                 # Test suite
+├── docs/                  # Documentation
+└── scripts/               # Build scripts
+```
+
+### Building Tests
+
+```bash
+# Build with tests enabled (default)
+cmake --build build/Debug
+
+# Run tests
+ctest --test-dir build/Debug
+```
+
+### Code Style
+
+This project uses clang-format for code formatting. Run:
+
+```bash
+# Format all source files
+find . -name "*.cpp" -o -name "*.h" | xargs clang-format -i
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## License
+
+This project is licensed under the {{LICENSE_TYPE}} License - see the [LICENSE](LICENSE) file for details.
+
+## Author
+
+{{AUTHOR_NAME}}
+
+## Acknowledgments
+
+- Built with [Qt6](https://www.qt.io/)
+- Dependency management by [vcpkg](https://vcpkg.io/)
+- Based on [qt-simple-template](https://github.com/your-org/qt-simple-template)

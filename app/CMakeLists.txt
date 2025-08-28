@@ -25,18 +25,35 @@ qt_add_translations(
 
 qt_add_resources(RESs app.qrc)
 
+# Collect all source files
+file(GLOB_RECURSE APP_SOURCES
+    "src/*.cpp"
+    "include/*.h"
+)
+
 target_sources(
     app
     PRIVATE
+    # Legacy files (keeping for compatibility)
     Widget.cpp
+    Widget.h
+
+    # Main application
     main.cpp
+
+    # MVC Architecture sources
+    ${APP_SOURCES}
+
+    # Resources
     ${RESs}
 )
+
 target_include_directories(
     app
     PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_link_libraries(
     app
@@ -45,13 +62,30 @@ target_link_libraries(
     controls
 )
 
-# fix the "qt.qpa.plugin: Could not find the Qt platform plugin 'windows' in ''" issue
-add_custom_command(
-    TARGET app
-    POST_BUILD
-    COMMAND Qt6::windeployqt
-    ARGS $<TARGET_FILE:app>
-)
+# Platform-specific deployment configuration
+if(PLATFORM_MSYS2)
+    # MSYS2 deployment using windeployqt from MSYS2 environment
+    if(WINDEPLOYQT_EXECUTABLE)
+        add_custom_command(
+            TARGET app
+            POST_BUILD
+            COMMAND ${WINDEPLOYQT_EXECUTABLE}
+            ARGS $<TARGET_FILE:app> --verbose 2
+            COMMENT "Deploying Qt libraries with MSYS2 windeployqt"
+        )
+    else()
+        message(WARNING "windeployqt not found in MSYS2 environment, manual deployment may be required")
+    endif()
+elseif(WIN32)
+    # Native Windows deployment
+    add_custom_command(
+        TARGET app
+        POST_BUILD
+        COMMAND Qt6::windeployqt
+        ARGS $<TARGET_FILE:app>
+        COMMENT "Deploying Qt libraries with windeployqt"
+    )
+endif()
 
 add_dependencies(app COPYING_ASSETS)
 add_custom_target(COPYING_ASSETS DEPENDS ${CMAKE_BINARY_DIR}/COPYING_ASSETS_DUMMY)

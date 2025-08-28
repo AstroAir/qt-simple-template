@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
+  <metadata>
+    <id>qt-simple-template</id>
+    <version>@PROJECT_VERSION@</version>
+    <packageSourceUrl>https://github.com/example/qt-simple-template</packageSourceUrl>
+    <owners>Qt Simple Template Developers</owners>
+    <title>Qt Simple Template</title>
+    <authors>Qt Simple Template Developers</authors>
+    <projectUrl>https://github.com/example/qt-simple-template</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/example/qt-simple-template/main/assets/images/icon.png</iconUrl>
+    <copyright>2024 Qt Simple Template Developers</copyright>
+    <licenseUrl>https://github.com/example/qt-simple-template/blob/main/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectSourceUrl>https://github.com/example/qt-simple-template</projectSourceUrl>
+    <docsUrl>https://github.com/example/qt-simple-template/blob/main/README.md</docsUrl>
+    <bugTrackerUrl>https://github.com/example/qt-simple-template/issues</bugTrackerUrl>
+    <tags>qt qt6 template application development cross-platform</tags>
+    <summary>A comprehensive Qt6 application template with modern build system</summary>
+    <description>
+Qt Simple Template is a comprehensive Qt6 application template that provides:
+
+* Modern CMake build system with multiple package manager support
+* Cross-platform compatibility (Windows, macOS, Linux)
+* Package manager priority system (MSYS2, vcpkg, Conan)
+* Comprehensive packaging support for multiple formats
+* CI/CD integration templates
+* Extensive documentation and examples
+
+Perfect for developers who want to quickly start a new Qt6 project with best practices and modern tooling.
+    </description>
+    <releaseNotes>https://github.com/example/qt-simple-template/releases/tag/v@PROJECT_VERSION@</releaseNotes>
+    <dependencies>
+      <dependency id="vcredist2022" version="14.30.30704" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

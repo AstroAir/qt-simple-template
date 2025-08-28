@@ -1,0 +1,59 @@
+PackageIdentifier: Example.QtSimpleTemplate
+PackageVersion: @PROJECT_VERSION@
+PackageName: Qt Simple Template
+Publisher: Qt Simple Template Developers
+License: MIT
+LicenseUrl: https://github.com/example/qt-simple-template/blob/main/LICENSE
+ShortDescription: A comprehensive Qt6 application template with modern build system
+Description: |
+  Qt Simple Template is a comprehensive Qt6 application template that provides:
+  
+  * Modern CMake build system with multiple package manager support
+  * Cross-platform compatibility (Windows, macOS, Linux)
+  * Package manager priority system (MSYS2, vcpkg, Conan)
+  * Comprehensive packaging support for multiple formats
+  * CI/CD integration templates
+  * Extensive documentation and examples
+  
+  Perfect for developers who want to quickly start a new Qt6 project with best practices and modern tooling.
+PackageUrl: https://github.com/example/qt-simple-template
+Tags:
+- qt
+- qt6
+- template
+- application
+- development
+- cross-platform
+- cmake
+FileExtensions:
+- exe
+Protocols:
+- http
+- https
+Commands:
+- qt-simple-template
+Installers:
+- InstallerLocale: en-US
+  Architecture: x64
+  InstallerType: msi
+  InstallerUrl: https://github.com/example/qt-simple-template/releases/download/v@PROJECT_VERSION@/qt-simple-template-@PROJECT_VERSION@.msi
+  InstallerSha256: CHECKSUM_TO_BE_REPLACED
+  ProductCode: '{PRODUCT_CODE_TO_BE_REPLACED}'
+  Scope: machine
+  InstallerSwitches:
+    Silent: /quiet
+    SilentWithProgress: /passive
+    Interactive: /interactive
+    InstallLocation: INSTALLFOLDER="<INSTALLPATH>"
+    Log: /log "<LOGPATH>"
+  UpgradeBehavior: install
+  Dependencies:
+    WindowsFeatures:
+    - NetFx4Extended-ASPNET45
+    WindowsLibraries:
+    - Microsoft.VCRedist.2022.x64
+    PackageDependencies:
+    - PackageIdentifier: Microsoft.VCRedist.2022.x64
+      MinimumVersion: 14.30.30704
+ManifestType: singleton
+ManifestVersion: 1.4.0

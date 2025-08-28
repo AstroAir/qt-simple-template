@@ -1,0 +1,270 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+
+env:
+  QT_VERSION: 6.7.0
+  CMAKE_VERSION: 3.28.0
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  nightly-build:
+    name: Nightly - ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+              name: "Windows MSVC Debug",
+              os: windows-latest,
+              preset: "Debug-Windows",
+              build_preset: "Debug-Windows",
+              qt_arch: "win64_msvc2022_64"
+            }
+          - {
+              name: "Windows MSVC Release",
+              os: windows-latest,
+              preset: "Release-Windows",
+              build_preset: "Release-Windows", 
+              qt_arch: "win64_msvc2022_64"
+            }
+          - {
+              name: "Ubuntu GCC Debug",
+              os: ubuntu-latest,
+              preset: "Debug-Unix",
+              build_preset: "Debug-Unix",
+              qt_arch: "gcc_64"
+            }
+          - {
+              name: "Ubuntu GCC Release",
+              os: ubuntu-latest,
+              preset: "Release-Unix",
+              build_preset: "Release-Unix",
+              qt_arch: "gcc_64"
+            }
+          - {
+              name: "macOS Clang Debug",
+              os: macos-latest,
+              preset: "Debug-Unix",
+              build_preset: "Debug-Unix",
+              qt_arch: "clang_64"
+            }
+          - {
+              name: "macOS Clang Release",
+              os: macos-latest,
+              preset: "Release-Unix", 
+              build_preset: "Release-Unix",
+              qt_arch: "clang_64"
+            }
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '4887ad6d1414f74cb7cb8d1e527fb46adb4e9ace'
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        arch: ${{ matrix.config.qt_arch }}
+        cache: true
+
+    - name: Install system dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          libgl1-mesa-dev \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libxcb-xfixes0 \
+          xvfb \
+          valgrind
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja
+
+    - name: Setup MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure CMake with extended options
+      run: |
+        cmake --preset ${{ matrix.config.preset }} \
+          -DENABLE_STATIC_ANALYSIS=ON \
+          -DENABLE_SANITIZERS=${{ contains(matrix.config.preset, 'Debug') && 'ON' || 'OFF' }} \
+          -DENABLE_COVERAGE=${{ contains(matrix.config.preset, 'Debug') && runner.os == 'Linux' && 'ON' || 'OFF' }}
+
+    - name: Build
+      run: cmake --build --preset ${{ matrix.config.build_preset }}
+
+    - name: Start Xvfb (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+    - name: Run tests
+      run: |
+        cd build/${{ contains(matrix.config.preset, 'Windows') && (contains(matrix.config.preset, 'Release') && 'Release-Windows' || 'Debug-Windows') || (contains(matrix.config.preset, 'Release') && 'Release' || 'Debug') }}
+        ctest --output-on-failure --parallel 4 --timeout 300
+      env:
+        QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
+        DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
+
+    - name: Run memory tests (Linux Debug)
+      if: runner.os == 'Linux' && contains(matrix.config.preset, 'Debug')
+      run: |
+        cd build/Debug
+        ctest --output-on-failure -T memcheck || true
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: :99
+
+    - name: Run benchmarks
+      run: |
+        cd build/${{ contains(matrix.config.preset, 'Windows') && (contains(matrix.config.preset, 'Release') && 'Release-Windows' || 'Debug-Windows') || (contains(matrix.config.preset, 'Release') && 'Release' || 'Debug') }}
+        ctest --output-on-failure -R benchmark_ || true
+      env:
+        QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
+        DISPLAY: ${{ runner.os == 'Linux' && ':99' || '' }}
+
+    - name: Package (Release builds)
+      if: contains(matrix.config.preset, 'Release')
+      run: |
+        cd build/${{ contains(matrix.config.preset, 'Windows') && 'Release-Windows' || 'Release' }}
+        cmake --build . --target package || true
+
+    - name: Upload nightly artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: nightly-${{ matrix.config.name }}-${{ github.run_number }}
+        path: |
+          build/*/app/
+          build/*/lib/
+          build/*/*.exe
+          build/*/*.dmg
+          build/*/*.deb
+          build/*/*.rpm
+          build/*/*.tar.gz
+          build/*/*.zip
+          !build/*/app/**/*.pdb
+          !build/*/lib/**/*.pdb
+        retention-days: 7
+
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    needs: nightly-build
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          libgl1-mesa-dev \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libxcb-xfixes0 \
+          xvfb \
+          perf-tools-unstable
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        arch: gcc_64
+        cache: true
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '4887ad6d1414f74cb7cb8d1e527fb46adb4e9ace'
+
+    - name: Configure and build
+      run: |
+        cmake --preset Release-Unix
+        cmake --build --preset Release-Unix
+
+    - name: Start Xvfb
+      run: |
+        Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+
+    - name: Run performance benchmarks
+      run: |
+        cd build/Release
+        ctest --output-on-failure -R benchmark_ -V
+      env:
+        QT_QPA_PLATFORM: offscreen
+        DISPLAY: :99
+
+    - name: Upload performance results
+      uses: actions/upload-artifact@v4
+      with:
+        name: performance-results-${{ github.run_number }}
+        path: build/Release/Testing/
+        retention-days: 30
+
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [nightly-build, performance-test]
+    if: failure()
+    steps:
+    - name: Create Issue on Failure
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const title = `Nightly Build Failed - ${new Date().toISOString().split('T')[0]}`;
+          const body = `
+          The nightly build failed on ${new Date().toISOString()}.
+          
+          **Workflow Run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          Please investigate and fix the issues.
+          `;
+          
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: title,
+            body: body,
+            labels: ['bug', 'nightly-failure']
+          });

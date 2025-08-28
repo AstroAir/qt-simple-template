@@ -1,0 +1,222 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  QT_VERSION: 6.7.0
+  CMAKE_VERSION: 3.28.0
+  VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+
+jobs:
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "VERSION=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.VERSION }}
+        release_name: Release ${{ steps.get_version.outputs.VERSION }}
+        draft: false
+        prerelease: false
+        body: |
+          ## Changes
+          
+          * See [CHANGELOG.md](CHANGELOG.md) for detailed changes
+          
+          ## Downloads
+          
+          * **Windows**: Download the `.exe` installer
+          * **macOS**: Download the `.dmg` disk image  
+          * **Linux**: Download the `.AppImage` or use package managers
+          
+          ## Installation
+          
+          See [Installation Guide](docs/user-guide/installation.md) for detailed instructions.
+
+  build-release:
+    name: Build Release - ${{ matrix.config.name }}
+    needs: create-release
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - {
+              name: "Windows",
+              os: windows-latest,
+              preset: "Release-Windows",
+              build_preset: "Release-Windows",
+              qt_arch: "win64_msvc2022_64",
+              package_name: "qt-simple-template-windows.exe"
+            }
+          - {
+              name: "macOS",
+              os: macos-latest, 
+              preset: "Release-Unix",
+              build_preset: "Release-Unix",
+              qt_arch: "clang_64",
+              package_name: "qt-simple-template-macos.dmg"
+            }
+          - {
+              name: "Linux",
+              os: ubuntu-latest,
+              preset: "Release-Unix", 
+              build_preset: "Release-Unix",
+              qt_arch: "gcc_64",
+              package_name: "qt-simple-template-linux.AppImage"
+            }
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '4887ad6d1414f74cb7cb8d1e527fb46adb4e9ace'
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        arch: ${{ matrix.config.qt_arch }}
+        cache: true
+
+    - name: Install system dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          libgl1-mesa-dev \
+          libxkbcommon-x11-0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-xinerama0 \
+          libxcb-xfixes0
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja create-dmg
+
+    - name: Setup MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Configure CMake
+      run: cmake --preset ${{ matrix.config.preset }}
+
+    - name: Build
+      run: cmake --build --preset ${{ matrix.config.build_preset }}
+
+    - name: Test
+      run: |
+        cd build/${{ contains(matrix.config.preset, 'Windows') && 'Release-Windows' || 'Release' }}
+        ctest --output-on-failure --parallel 4
+      env:
+        QT_QPA_PLATFORM: ${{ runner.os == 'Linux' && 'offscreen' || '' }}
+
+    - name: Package (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd build/Release-Windows
+        cmake --build . --target package_nsis
+        
+    - name: Package (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        cd build/Release
+        cmake --build . --target package_dmg
+
+    - name: Package (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        cd build/Release
+        cmake --build . --target package_appimage
+
+    - name: Find package file
+      id: find_package
+      shell: bash
+      run: |
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          PACKAGE_FILE=$(find build/Release-Windows -name "*.exe" | head -1)
+        elif [ "${{ runner.os }}" = "macOS" ]; then
+          PACKAGE_FILE=$(find build/Release -name "*.dmg" | head -1)
+        else
+          PACKAGE_FILE=$(find build/Release -name "*.AppImage" | head -1)
+        fi
+        echo "PACKAGE_FILE=$PACKAGE_FILE" >> $GITHUB_OUTPUT
+        echo "Found package: $PACKAGE_FILE"
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ${{ steps.find_package.outputs.PACKAGE_FILE }}
+        asset_name: ${{ matrix.config.package_name }}
+        asset_content_type: application/octet-stream
+
+  publish-packages:
+    name: Publish Packages
+    needs: [create-release, build-release]
+    runs-on: ubuntu-latest
+    if: success()
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Publish Release
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: ${{ needs.create-release.outputs.release_id }},
+            draft: false
+          })

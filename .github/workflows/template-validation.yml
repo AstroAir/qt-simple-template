@@ -1,0 +1,239 @@
+name: Template Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  validate-template:
+    name: Validate Template Configuration
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Validate template configuration
+      run: python scripts/validate_template.py --strict
+
+    - name: Test template customization
+      run: |
+        python scripts/customize_template.py \
+          --project-name "test_project" \
+          --app-name "Test Application" \
+          --project-description "Test project for validation" \
+          --author-name "CI Test" \
+          --author-email "ci@example.com" \
+          --skip-commands
+
+    - name: Verify customized files
+      run: |
+        # Check that files were properly customized
+        grep -q "test_project" CMakeLists.txt
+        grep -q "Test Application" README.md
+        grep -q "CI Test" LICENSE
+
+    - name: Restore original files
+      run: |
+        git checkout CMakeLists.txt vcpkg.json README.md LICENSE app/config.h.in
+
+  test-template-generation:
+    name: Test Template Generation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        config:
+          - {
+              project_name: "minimal_app",
+              features: "--disable-testing --disable-docs --disable-i18n"
+            }
+          - {
+              project_name: "full_app", 
+              features: "--enable-testing --enable-docs --enable-i18n --enable-themes"
+            }
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Create test directory
+      run: |
+        mkdir -p test-generation
+        cp -r . test-generation/
+        cd test-generation
+
+    - name: Customize template
+      working-directory: test-generation
+      run: |
+        python scripts/customize_template.py \
+          --project-name "${{ matrix.config.project_name }}" \
+          --app-name "Test ${{ matrix.config.project_name }}" \
+          --project-description "Generated test project" \
+          --author-name "Template Test" \
+          --author-email "test@example.com" \
+          ${{ matrix.config.features }} \
+          --skip-commands
+
+    - name: Install Qt (for build test)
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: 6.7.0
+        arch: ${{ runner.os == 'Windows' && 'win64_msvc2022_64' || (runner.os == 'macOS' && 'clang_64' || 'gcc_64') }}
+        cache: true
+
+    - name: Install system dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          libgl1-mesa-dev
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install cmake ninja
+
+    - name: Setup MSVC (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgGitCommitId: '4887ad6d1414f74cb7cb8d1e527fb46adb4e9ace'
+
+    - name: Test build configuration
+      working-directory: test-generation
+      run: |
+        cmake --preset ${{ runner.os == 'Windows' && 'Debug-Windows' || 'Debug-Unix' }}
+
+    - name: Test build
+      working-directory: test-generation
+      run: |
+        cmake --build --preset ${{ runner.os == 'Windows' && 'Debug-Windows' || 'Debug-Unix' }}
+
+    - name: Test execution
+      working-directory: test-generation
+      run: |
+        cd build/${{ runner.os == 'Windows' && 'Debug-Windows' || 'Debug' }}
+        if [ "${{ runner.os }}" = "Windows" ]; then
+          ./app/${{ matrix.config.project_name }}.exe --version || true
+        else
+          ./app/${{ matrix.config.project_name }} --version || true
+        fi
+      shell: bash
+
+    - name: Upload generated project
+      uses: actions/upload-artifact@v4
+      with:
+        name: generated-${{ matrix.config.project_name }}-${{ runner.os }}
+        path: test-generation/
+        retention-days: 3
+
+  validate-documentation:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          doxygen \
+          graphviz \
+          python3-pip
+        pip3 install \
+          markdown \
+          mkdocs \
+          mkdocs-material
+
+    - name: Validate Markdown files
+      run: |
+        find docs/ -name "*.md" -exec python3 -m markdown {} \; > /dev/null
+
+    - name: Check documentation links
+      run: |
+        # Simple link checker for markdown files
+        find docs/ -name "*.md" -exec grep -l "http" {} \; | while read file; do
+          echo "Checking links in $file"
+          grep -o 'http[s]*://[^)]*' "$file" | while read url; do
+            curl -s --head "$url" > /dev/null || echo "Broken link: $url in $file"
+          done
+        done
+
+    - name: Validate Doxygen configuration
+      run: |
+        cd docs/api
+        doxygen -g test_config
+        diff -u Doxyfile test_config || echo "Doxygen config differences found"
+
+  check-dependencies:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Validate vcpkg.json
+      run: |
+        python3 -c "
+        import json
+        with open('vcpkg.json', 'r') as f:
+            config = json.load(f)
+        
+        required_fields = ['name', 'version', 'dependencies']
+        for field in required_fields:
+            assert field in config, f'Missing required field: {field}'
+        
+        # Check for Qt dependencies
+        deps = [d if isinstance(d, str) else d.get('name') for d in config['dependencies']]
+        qt_deps = ['qtbase', 'qtsvg']
+        for dep in qt_deps:
+            assert dep in deps, f'Missing Qt dependency: {dep}'
+        
+        print('vcpkg.json validation passed')
+        "
+
+    - name: Check CMake minimum version
+      run: |
+        cmake_version=$(grep "cmake_minimum_required" CMakeLists.txt | grep -o "[0-9]\+\.[0-9]\+")
+        echo "CMake minimum version: $cmake_version"
+        
+        # Verify it's a reasonable version
+        python3 -c "
+        version = '$cmake_version'.split('.')
+        major, minor = int(version[0]), int(version[1])
+        assert major >= 3 and minor >= 20, 'CMake version too old'
+        print('CMake version check passed')
+        "
+
+    - name: Validate Qt version compatibility
+      run: |
+        qt_version=$(grep "find_package.*Qt6" CMakeLists.txt | head -1)
+        echo "Qt requirement: $qt_version"
+        
+        # Check that all required Qt components are listed
+        components="Core Gui Widgets Svg LinguistTools"
+        for component in $components; do
+          if ! echo "$qt_version" | grep -q "$component"; then
+            echo "Warning: Qt component $component not found in find_package"
+          fi
+        done

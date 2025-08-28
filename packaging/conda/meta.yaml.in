@@ -1,0 +1,64 @@
+{% set name = "@PROJECT_NAME@" %}
+{% set version = "@PROJECT_VERSION@" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://github.com/example/{{ name }}/archive/v{{ version }}.tar.gz
+  sha256: CHECKSUM_TO_BE_REPLACED
+
+build:
+  number: 0
+  skip: true  # [py<38]
+  script: |
+    cmake -S . -B build \
+      -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=$PREFIX \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_DOCS=OFF
+    cmake --build build
+    cmake --install build
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - cmake
+    - ninja
+    - qt-main
+  host:
+    - qt-main
+  run:
+    - qt-main
+
+test:
+  commands:
+    - {{ name }} --version
+    - test -f $PREFIX/bin/{{ name }}  # [unix]
+    - if not exist %LIBRARY_BIN%\{{ name }}.exe exit 1  # [win]
+
+about:
+  home: https://github.com/example/{{ name }}
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: A comprehensive Qt6 application template with modern build system
+  description: |
+    Qt Simple Template is a comprehensive Qt6 application template that provides:
+    
+    * Modern CMake build system with multiple package manager support
+    * Cross-platform compatibility (Windows, macOS, Linux)
+    * Package manager priority system (MSYS2, vcpkg, Conan)
+    * Comprehensive packaging support for multiple formats
+    * CI/CD integration templates
+    * Extensive documentation and examples
+    
+    Perfect for developers who want to quickly start a new Qt6 project with best practices and modern tooling.
+  doc_url: https://github.com/example/{{ name }}/blob/main/README.md
+  dev_url: https://github.com/example/{{ name }}
+
+extra:
+  recipe-maintainers:
+    - qt-simple-template-developers

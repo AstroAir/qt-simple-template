@@ -1,0 +1,291 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "Debug-Unix",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "Release-Unix",
+            "generator": "Ninja", 
+            "binaryDir": "${sourceDir}/build/Release",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "Debug-Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/Debug-Windows",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "Release-Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/Release-Windows",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "ENABLE_STATIC_ANALYSIS": "OFF",
+                "ENABLE_SANITIZERS": "OFF",
+                "ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "Conan-Debug-Unix",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Conan-Debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Conan-Debug/conan_toolchain.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "USE_CONAN": "ON"
+            }
+        },
+        {
+            "name": "Conan-Release-Unix",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Conan-Release",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Conan-Release/conan_toolchain.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "USE_CONAN": "ON"
+            }
+        },
+        {
+            "name": "Conan-Debug-Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/Conan-Debug-Windows",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Conan-Debug-Windows/conan_toolchain.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "USE_CONAN": "ON"
+            }
+        },
+        {
+            "name": "Conan-Release-Windows",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/Conan-Release-Windows",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Conan-Release-Windows/conan_toolchain.cmake",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "USE_CONAN": "ON"
+            }
+        },
+        {
+            "name": "MSYS2-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON"
+            }
+        },
+        {
+            "name": "MSYS2-Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/MSYS2-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON"
+            }
+        },
+        {
+            "name": "Hybrid-Debug-MSYS2-First",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Hybrid-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "MSYS2;VCPKG;CONAN"
+            }
+        },
+        {
+            "name": "Hybrid-Release-MSYS2-First",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Hybrid-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "MSYS2;VCPKG;CONAN"
+            }
+        },
+        {
+            "name": "Hybrid-Debug-vcpkg-First",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Hybrid-vcpkg-Debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "VCPKG;MSYS2;CONAN"
+            }
+        },
+        {
+            "name": "Hybrid-Release-vcpkg-First",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Hybrid-vcpkg-Release",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "PACKAGE_MANAGER_PRIORITY_ORDER": "VCPKG;MSYS2;CONAN"
+            }
+        },
+        {
+            "name": "Force-MSYS2-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Force-MSYS2-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "MSYS2"
+            }
+        },
+        {
+            "name": "Force-vcpkg-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Force-vcpkg-Debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "VCPKG"
+            }
+        },
+        {
+            "name": "Force-Conan-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Force-Conan-Debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/build/Force-Conan-Debug/conan_toolchain.cmake",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "CONAN"
+            }
+        },
+        {
+            "name": "Force-System-Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/Force-System-Debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTING": "ON",
+                "BUILD_DOCS": "ON",
+                "FORCE_PACKAGE_MANAGER": "SYSTEM"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug-Unix",
+            "configurePreset": "Debug-Unix"
+        },
+        {
+            "name": "Release-Unix",
+            "configurePreset": "Release-Unix"
+        },
+        {
+            "name": "Debug-Windows",
+            "configurePreset": "Debug-Windows"
+        },
+        {
+            "name": "Release-Windows",
+            "configurePreset": "Release-Windows"
+        },
+        {
+            "name": "Conan-Debug-Unix",
+            "configurePreset": "Conan-Debug-Unix"
+        },
+        {
+            "name": "Conan-Release-Unix",
+            "configurePreset": "Conan-Release-Unix"
+        },
+        {
+            "name": "Conan-Debug-Windows",
+            "configurePreset": "Conan-Debug-Windows"
+        },
+        {
+            "name": "Conan-Release-Windows",
+            "configurePreset": "Conan-Release-Windows"
+        },
+        {
+            "name": "MSYS2-Debug",
+            "configurePreset": "MSYS2-Debug"
+        },
+        {
+            "name": "MSYS2-Release",
+            "configurePreset": "MSYS2-Release"
+        },
+        {
+            "name": "Hybrid-Debug-MSYS2-First",
+            "configurePreset": "Hybrid-Debug-MSYS2-First"
+        },
+        {
+            "name": "Hybrid-Release-MSYS2-First",
+            "configurePreset": "Hybrid-Release-MSYS2-First"
+        },
+        {
+            "name": "Hybrid-Debug-vcpkg-First",
+            "configurePreset": "Hybrid-Debug-vcpkg-First"
+        },
+        {
+            "name": "Hybrid-Release-vcpkg-First",
+            "configurePreset": "Hybrid-Release-vcpkg-First"
+        },
+        {
+            "name": "Force-MSYS2-Debug",
+            "configurePreset": "Force-MSYS2-Debug"
+        },
+        {
+            "name": "Force-vcpkg-Debug",
+            "configurePreset": "Force-vcpkg-Debug"
+        },
+        {
+            "name": "Force-Conan-Debug",
+            "configurePreset": "Force-Conan-Debug"
+        },
+        {
+            "name": "Force-System-Debug",
+            "configurePreset": "Force-System-Debug"
+        }
+    ]
+}
