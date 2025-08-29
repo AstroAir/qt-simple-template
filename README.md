@@ -4,8 +4,9 @@ A modern, production-ready Qt6 application template with multiple package manage
 
 ## Features
 
-✨ **Multiple Package Managers**: vcpkg, Conan, MSYS2, and system packages
+✨ **System Packages First**: Uses system-installed packages by default with optional package manager support
 🔧 **Modern Build System**: CMake 3.28+ with presets and cross-platform support
+📦 **Flexible Package Management**: Optional vcpkg, Conan, or MSYS2 integration
 🧪 **Comprehensive Testing**: Unit tests, integration tests, and benchmarks
 📚 **Documentation**: API docs with Doxygen, user guides, and developer documentation
 🚀 **CI/CD Ready**: GitHub Actions workflows for all platforms and package managers
@@ -19,7 +20,7 @@ The application follows a comprehensive Model-View-Controller architecture patte
 
 ### Directory Structure
 
-```
+```txt
 app/
 ├── include/
 │   ├── interfaces/     # Abstract interfaces (IModel, IView, IController, IService)
@@ -50,11 +51,36 @@ See [MVC Architecture Guide](docs/architecture/mvc-architecture.md) for detailed
 - One of the supported package managers
 - C++20 compatible compiler
 
-### Package Manager Options
+### Build Options
 
-Choose the package manager that best fits your workflow:
+The build system uses **system packages by default** and provides optional package manager integration:
 
-#### 🔷 vcpkg (Default - Recommended for cross-platform)
+#### 🏠 System Packages (Default - Recommended)
+
+Uses packages installed through your system's package manager (apt, brew, pacman, etc.):
+
+```bash
+# Install Qt6 through your system package manager first:
+
+# Ubuntu/Debian
+sudo apt install qt6-base-dev qt6-tools-dev qt6-svg-dev
+
+# macOS (Homebrew)
+brew install qt6
+
+# Arch Linux
+sudo pacman -S qt6-base qt6-tools qt6-svg
+
+# Windows (MSYS2)
+pacman -S mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-qt6-svg
+
+# Build with system packages (default behavior)
+mkdir build && cd build
+cmake ..
+cmake --build .
+```
+
+#### 🔷 vcpkg (Optional - Cross-platform package management)
 
 ```bash
 # Install vcpkg
@@ -63,83 +89,52 @@ cd vcpkg && ./bootstrap-vcpkg.sh  # Linux/macOS
 cd vcpkg && .\bootstrap-vcpkg.bat  # Windows
 export VCPKG_ROOT=/path/to/vcpkg
 
-# Build
-cmake --preset Debug-Unix     # Linux/macOS
-cmake --preset Debug-Windows  # Windows
+# Build with vcpkg
+cmake --preset Debug-Unix -DUSE_VCPKG=ON     # Linux/macOS
+cmake --preset Debug-Windows -DUSE_VCPKG=ON  # Windows
 cmake --build build/Debug
 ```
 
-#### 🔶 Conan (Professional dependency management)
+#### 🔶 Conan (Optional - Professional dependency management)
 
 ```bash
 # Install Conan
 pip install conan
 conan profile detect --force
 
-# Build (automated script)
+# Build with Conan (automated script)
 python scripts/build_conan.py --build-type Debug
 
-# Or manual
+# Or manual with Conan
 conan install . --output-folder build/Conan-Debug --build missing
-cmake --preset Conan-Debug-Unix
+cmake --preset Conan-Debug-Unix -DUSE_CONAN=ON
 cmake --build build/Conan-Debug
 ```
 
-#### 🔸 MSYS2 (Windows with Unix-like tools + Priority System)
+#### 🔧 Force Specific Package Manager
 
 ```bash
-# Install MSYS2 from https://www.msys2.org/
-# The build system now automatically prioritizes MSYS2 packages when available
+# Force system packages (explicit)
+cmake -DFORCE_PACKAGE_MANAGER=SYSTEM ..
 
-# Automated script with dependency installation
-./scripts/build_msys2.sh --build-type Debug --install-deps
+# Force vcpkg
+cmake -DFORCE_PACKAGE_MANAGER=VCPKG ..
 
-# From Windows Command Prompt
-scripts\build_msys2.bat --build-type Debug
+# Force Conan
+cmake -DFORCE_PACKAGE_MANAGER=CONAN ..
 
-# Manual installation
-pacman -S mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-svg mingw-w64-x86_64-qt6-tools
-pacman -S mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
-
-# Build with MSYS2-specific presets (recommended)
-cmake --preset MSYS2-UCRT64-Release    # UCRT64 environment (recommended)
-cmake --build --preset MSYS2-UCRT64-Release
-
-# Alternative environments
-cmake --preset MSYS2-MINGW64-Release   # MINGW64 environment
-cmake --preset MSYS2-CLANG64-Release   # CLANG64 environment
-
-# Hybrid mode with fallback
-cmake --preset MSYS2-Hybrid-Release    # MSYS2 → vcpkg → Conan fallback
-
-# Legacy method
-cmake --preset Hybrid-Debug-MSYS2-First
-cmake --build build/Hybrid-Debug
-```
-
-#### 🔹 System Packages (Linux distributions)
-
-```bash
-# Ubuntu/Debian
-sudo apt install qt6-base-dev qt6-svg-dev qt6-tools-dev cmake ninja-build
-cmake -S . -B build -G Ninja
-cmake --build build
-
-# Fedora/RHEL
-sudo dnf install qt6-qtbase-devel qt6-qtsvg-devel cmake ninja-build
-
-# Arch Linux
-sudo pacman -S qt6-base qt6-svg qt6-tools cmake ninja
+# Force MSYS2 (Windows only)
+cmake -DFORCE_PACKAGE_MANAGER=MSYS2 ..
 ```
 
 ### Running the Application
 
 ```bash
 # Linux/macOS
-./build/Debug/app/qt_simple_template
+./build/app/qt_simple_template
 
 # Windows
-.\build\Debug\app\qt_simple_template.exe
+.\build\app\qt_simple_template.exe
 ```
 
 ## 📦 Comprehensive Multi-Platform Packaging

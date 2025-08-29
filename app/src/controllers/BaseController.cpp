@@ -66,22 +66,26 @@ void BaseController::setView(IView *view) {
     }
 
     // Disconnect from old view
-    if (m_view) {
-        disconnect(m_view, nullptr, this, nullptr);
-    }
+    // TODO: Fix signal/slot connections for IView interface
+    // if (m_view) {
+    //     disconnect(m_view, nullptr, this, nullptr);
+    // }
 
     m_view = view;
 
     // Connect to new view
-    if (m_view) {
-        connect(m_view, &IView::viewUpdateRequested, this,
-                &BaseController::onViewUpdateRequestedSlot);
-        connect(m_view, &IView::userAction, this,
-                &BaseController::onUserActionSlot);
-        connect(m_view, &IView::viewClosing, this,
-                &BaseController::onViewClosingSlot);
+    // TODO: Fix signal/slot connections for IView interface
+    // if (m_view) {
+    //     connect(m_view, &IView::viewUpdateRequested, this,
+    //             &BaseController::onViewUpdateRequestedSlot);
+    //     connect(m_view, &IView::userAction, this,
+    //             &BaseController::onUserActionSlot);
+    //     connect(m_view, &IView::viewClosing, this,
+    //             &BaseController::onViewClosingSlot);
+    // }
 
-        // Set this controller in the view
+    // Set this controller in the view
+    if (m_view) {
         m_view->setController(this);
     }
 

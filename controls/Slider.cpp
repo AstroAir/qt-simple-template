@@ -1,4 +1,5 @@
 #include "Slider.h"
+#include <cmath>
 
 Slider::Slider(QWidget *parent) : QSlider(parent) {}
 

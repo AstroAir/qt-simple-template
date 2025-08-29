@@ -28,15 +28,21 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     virtual ~MainWindow() = default;
 
-    // IView interface implementation
-    bool initialize() override;
-    void setController(IController *controller) override;
-    IController *getController() const override;
-    void updateView() override;
-    void showError(const QString &message) override;
-    void showInfo(const QString &message) override;
-    void setViewEnabled(bool enabled) override;
-    bool isViewValid() const override;
+signals:
+    // Qt signals for this view class
+    void viewUpdateRequested();
+    void userAction(const QString &actionName, const QVariant &data = QVariant());
+    void viewClosing();
+
+    // IView interface implementation - declared as virtual to avoid MOC conflicts
+    virtual bool initialize() override;
+    virtual void setController(IController *controller) override;
+    virtual IController *getController() const override;
+    virtual void updateView() override;
+    virtual void showError(const QString &message) override;
+    virtual void showInfo(const QString &message) override;
+    virtual void setViewEnabled(bool enabled) override;
+    virtual bool isViewValid() const override;
 
     /**
      * @brief Set the application model for data binding

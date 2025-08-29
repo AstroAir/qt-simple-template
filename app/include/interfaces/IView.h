@@ -11,11 +11,9 @@ class IController;
  * This interface defines the common contract that all view classes
  * should implement in the MVC architecture.
  */
-class IView : public QWidget {
-    Q_OBJECT
-
+class IView {
 public:
-    explicit IView(QWidget *parent = nullptr) : QWidget(parent) {}
+    IView() = default;
     virtual ~IView() = default;
 
     /**

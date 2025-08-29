@@ -181,24 +181,32 @@ endif()
 
 # Apply debug flags
 if(DEBUG_COMPILE_FLAGS)
-    add_compile_options($<$<CONFIG:Debug>:${DEBUG_COMPILE_FLAGS}>)
+    foreach(flag ${DEBUG_COMPILE_FLAGS})
+        add_compile_options($<$<CONFIG:Debug>:${flag}>)
+    endforeach()
 endif()
 
 if(DEBUG_LINK_FLAGS)
-    add_link_options($<$<CONFIG:Debug>:${DEBUG_LINK_FLAGS}>)
+    foreach(flag ${DEBUG_LINK_FLAGS})
+        add_link_options($<$<CONFIG:Debug>:${flag}>)
+    endforeach()
 endif()
 
 # Apply release flags
 if(RELEASE_COMPILE_FLAGS)
-    add_compile_options($<$<CONFIG:Release>:${RELEASE_COMPILE_FLAGS}>)
-    add_compile_options($<$<CONFIG:RelWithDebInfo>:${RELEASE_COMPILE_FLAGS}>)
-    add_compile_options($<$<CONFIG:MinSizeRel>:${RELEASE_COMPILE_FLAGS}>)
+    foreach(flag ${RELEASE_COMPILE_FLAGS})
+        add_compile_options($<$<CONFIG:Release>:${flag}>)
+        add_compile_options($<$<CONFIG:RelWithDebInfo>:${flag}>)
+        add_compile_options($<$<CONFIG:MinSizeRel>:${flag}>)
+    endforeach()
 endif()
 
 if(RELEASE_LINK_FLAGS)
-    add_link_options($<$<CONFIG:Release>:${RELEASE_LINK_FLAGS}>)
-    add_link_options($<$<CONFIG:RelWithDebInfo>:${RELEASE_LINK_FLAGS}>)
-    add_link_options($<$<CONFIG:MinSizeRel>:${RELEASE_LINK_FLAGS}>)
+    foreach(flag ${RELEASE_LINK_FLAGS})
+        add_link_options($<$<CONFIG:Release>:${flag}>)
+        add_link_options($<$<CONFIG:RelWithDebInfo>:${flag}>)
+        add_link_options($<$<CONFIG:MinSizeRel>:${flag}>)
+    endforeach()
 endif()
 
 # Static analysis

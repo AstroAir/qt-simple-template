@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeSharedSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug-Windows" ENABLED="true" CONFIG_NAME="Debug" GENERATION_DIR="build/Debug-Windows">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="VCPKG_ROOT" value="$PROJECT_DIR$/vcpkg" />
+            <env name="CMAKE_TOOLCHAIN_FILE" value="$PROJECT_DIR$/vcpkg/scripts/buildsystems/vcpkg.cmake" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Release-Windows" ENABLED="true" CONFIG_NAME="Release" GENERATION_DIR="build/Release-Windows">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="VCPKG_ROOT" value="$PROJECT_DIR$/vcpkg" />
+            <env name="CMAKE_TOOLCHAIN_FILE" value="$PROJECT_DIR$/vcpkg/scripts/buildsystems/vcpkg.cmake" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Debug-Unix" ENABLED="true" CONFIG_NAME="Debug" GENERATION_DIR="build/Debug">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="VCPKG_ROOT" value="$PROJECT_DIR$/vcpkg" />
+            <env name="CMAKE_TOOLCHAIN_FILE" value="$PROJECT_DIR$/vcpkg/scripts/buildsystems/vcpkg.cmake" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Release-Unix" ENABLED="true" CONFIG_NAME="Release" GENERATION_DIR="build/Release">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="VCPKG_ROOT" value="$PROJECT_DIR$/vcpkg" />
+            <env name="CMAKE_TOOLCHAIN_FILE" value="$PROJECT_DIR$/vcpkg/scripts/buildsystems/vcpkg.cmake" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="Conan-Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_DIR="build/Conan-Debug">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="USE_CONAN" value="ON" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+      <configuration PROFILE_NAME="MSYS2-Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_DIR="build/MSYS2-UCRT64-Debug">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="USE_MSYS2" value="ON" />
+            <env name="PATH" value="C:/msys64/ucrt64/bin;$PATH$" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+    </configurations>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug-Windows" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Release-Windows" ENABLED="true" CONFIG_NAME="Release" />
+      <configuration PROFILE_NAME="Debug-Unix" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Release-Unix" ENABLED="true" CONFIG_NAME="Release" />
+      <configuration PROFILE_NAME="Conan-Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="MSYS2-Debug" ENABLED="true" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+</project>

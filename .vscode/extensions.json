@@ -1,0 +1,85 @@
+{
+  "recommendations": [
+    // C++ Development
+    "ms-vscode.cpptools",
+    "ms-vscode.cpptools-extension-pack",
+    "ms-vscode.cmake-tools",
+    "llvm-vs-code-extensions.vscode-clangd",
+    
+    // Qt Development
+    "tonka3000.qtvsctools",
+    "ms-vscode.qt-tools",
+    
+    // Code Quality and Formatting
+    "xaver.clang-format",
+    "notskm.clang-tidy",
+    "ms-vscode.cpptools-themes",
+    
+    // CMake Support
+    "cheshirekow.cmake-format",
+    "ms-vscode.cmake-tools",
+    "twxs.cmake",
+    
+    // Testing
+    "matepek.vscode-catch2-test-adapter",
+    "ms-vscode.test-adapter-converter",
+    
+    // Git and Version Control
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "donjayamanne.githistory",
+    
+    // Documentation
+    "cschlosser.doxdocgen",
+    "yzhang.markdown-all-in-one",
+    "shd101wyy.markdown-preview-enhanced",
+    
+    // Code Analysis
+    "sonarsource.sonarlint-vscode",
+    "ms-vscode.hexeditor",
+    
+    // Productivity
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "ms-python.python",
+    "ms-python.black-formatter",
+    
+    // Theme and UI
+    "pkief.material-icon-theme",
+    "zhuangtongfa.material-theme",
+    
+    // Docker (for containerized development)
+    "ms-azuretools.vscode-docker",
+    
+    // Remote Development
+    "ms-vscode-remote.remote-containers",
+    "ms-vscode-remote.remote-ssh",
+    "ms-vscode-remote.remote-wsl",
+    
+    // Package Managers
+    "ms-vscode.vscode-vcpkg",
+    
+    // Spell Checking
+    "streetsidesoftware.code-spell-checker",
+    
+    // Bracket Pair Colorizer
+    "coenraads.bracket-pair-colorizer-2",
+    
+    // Error Lens
+    "usernamehw.errorlens",
+    
+    // Todo Tree
+    "gruntfuggly.todo-tree",
+    
+    // Better Comments
+    "aaron-bond.better-comments",
+    
+    // Path Intellisense
+    "christian-kohler.path-intellisense"
+  ],
+  "unwantedRecommendations": [
+    // Conflicting or redundant extensions
+    "ms-vscode.cpptools-extension-pack",
+    "formulahendry.code-runner"
+  ]
+}

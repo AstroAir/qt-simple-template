@@ -2,7 +2,6 @@
 #include <QDir>
 #include <QFile>
 #include <QPixmap>
-#include <QStyleSheet>
 #include <QtTest>
 
 class TestResourceIntegration : public QObject {

@@ -1,12 +1,13 @@
 # Package Manager Priority System for qt-simple-template
-# This module implements priority-based package manager selection: MSYS2 → vcpkg → Conan
+# This module implements priority-based package manager selection: System → vcpkg → Conan
+# System packages are used by default, with optional package manager support
 
 # Include MSYS2 detection module
 include(MSYS2Detection)
 
 # Initialize package manager priority variables
 set(PACKAGE_MANAGER_SELECTED "" CACHE STRING "Selected package manager")
-set(PACKAGE_MANAGER_PRIORITY_ORDER "MSYS2;VCPKG;CONAN" CACHE STRING "Package manager priority order")
+set(PACKAGE_MANAGER_PRIORITY_ORDER "SYSTEM;VCPKG;CONAN" CACHE STRING "Package manager priority order")
 set(USE_MSYS2 FALSE CACHE BOOL "Use MSYS2 package manager")
 set(USE_VCPKG FALSE CACHE BOOL "Use vcpkg package manager")
 set(USE_CONAN FALSE CACHE BOOL "Use Conan package manager")
@@ -126,6 +127,28 @@ function(setup_conan_environment)
     message(STATUS "Conan environment configured")
 endfunction()
 
+# Function to detect system package availability
+function(detect_system_packages_availability RESULT_VAR)
+    set(SYSTEM_PACKAGES_AVAILABLE FALSE)
+
+    # Try to find Qt6 using system packages (pkg-config, find_package, etc.)
+    find_package(Qt6 QUIET COMPONENTS Core)
+    if(Qt6_FOUND)
+        set(SYSTEM_PACKAGES_AVAILABLE TRUE)
+        message(STATUS "System Qt6 packages detected: ${Qt6_VERSION}")
+    else()
+        message(STATUS "System Qt6 packages not found")
+    endif()
+
+    set(${RESULT_VAR} ${SYSTEM_PACKAGES_AVAILABLE} PARENT_SCOPE)
+
+    if(SYSTEM_PACKAGES_AVAILABLE)
+        message(STATUS "System packages are available")
+    else()
+        message(STATUS "System packages are not available")
+    endif()
+endfunction()
+
 # Function to select package manager based on priority
 function(select_package_manager_by_priority)
     message(STATUS "Selecting package manager by priority...")
@@ -183,29 +206,41 @@ function(select_package_manager_by_priority)
         endif()
 
     else()
-        # Use priority-based selection
+        # Use priority-based selection with system packages as default
         message(STATUS "Priority order: ${PACKAGE_MANAGER_PRIORITY_ORDER}")
 
-        # Initialize MSYS2 detection
-        initialize_msys2_detection()
-
         # Detect availability of each package manager
-        set(MSYS2_AVAILABLE ${MSYS2_QT6_AVAILABLE})
+        detect_system_packages_availability(SYSTEM_AVAILABLE)
         detect_vcpkg_availability(VCPKG_AVAILABLE)
         detect_conan_availability(CONAN_AVAILABLE)
+
+        # Initialize MSYS2 detection for Windows system packages
+        initialize_msys2_detection()
+        set(MSYS2_AVAILABLE ${MSYS2_QT6_AVAILABLE})
 
         # Select package manager based on priority and availability
         set(PACKAGE_MANAGER_FOUND FALSE)
 
         foreach(MANAGER ${PACKAGE_MANAGER_PRIORITY_ORDER})
             if(NOT PACKAGE_MANAGER_FOUND)
-                if(MANAGER STREQUAL "MSYS2" AND MSYS2_AVAILABLE)
-                    set(PACKAGE_MANAGER_SELECTED "MSYS2" CACHE STRING "Selected package manager" FORCE)
-                    set(USE_MSYS2 TRUE CACHE BOOL "Use MSYS2 package manager" FORCE)
-                    set(USE_VCPKG FALSE CACHE BOOL "Use vcpkg package manager" FORCE)
-                    set(USE_CONAN FALSE CACHE BOOL "Use Conan package manager" FORCE)
-                    set(PACKAGE_MANAGER_FOUND TRUE)
-                    message(STATUS "Selected package manager: MSYS2 (system packages)")
+                if(MANAGER STREQUAL "SYSTEM")
+                    # On Windows, prefer MSYS2 system packages if available, otherwise try regular system packages
+                    if(WIN32 AND MSYS2_AVAILABLE)
+                        set(PACKAGE_MANAGER_SELECTED "MSYS2" CACHE STRING "Selected package manager" FORCE)
+                        set(USE_MSYS2 TRUE CACHE BOOL "Use MSYS2 package manager" FORCE)
+                        set(USE_VCPKG FALSE CACHE BOOL "Use vcpkg package manager" FORCE)
+                        set(USE_CONAN FALSE CACHE BOOL "Use Conan package manager" FORCE)
+                        set(PACKAGE_MANAGER_FOUND TRUE)
+                        message(STATUS "Selected package manager: MSYS2 (Windows system packages)")
+                    elseif(SYSTEM_AVAILABLE OR NOT WIN32)
+                        # Use system packages (always try on non-Windows, or when detected on Windows)
+                        set(PACKAGE_MANAGER_SELECTED "SYSTEM" CACHE STRING "Selected package manager" FORCE)
+                        set(USE_MSYS2 FALSE CACHE BOOL "Use MSYS2 package manager" FORCE)
+                        set(USE_VCPKG FALSE CACHE BOOL "Use vcpkg package manager" FORCE)
+                        set(USE_CONAN FALSE CACHE BOOL "Use Conan package manager" FORCE)
+                        set(PACKAGE_MANAGER_FOUND TRUE)
+                        message(STATUS "Selected package manager: system packages")
+                    endif()
 
                 elseif(MANAGER STREQUAL "VCPKG" AND VCPKG_AVAILABLE)
                     set(PACKAGE_MANAGER_SELECTED "VCPKG" CACHE STRING "Selected package manager" FORCE)
@@ -228,13 +263,13 @@ function(select_package_manager_by_priority)
             endif()
         endforeach()
 
-        # Fallback to system packages if no package manager is found
+        # Final fallback to system packages if no package manager is found
         if(NOT PACKAGE_MANAGER_FOUND)
             set(PACKAGE_MANAGER_SELECTED "SYSTEM" CACHE STRING "Selected package manager" FORCE)
             set(USE_MSYS2 FALSE CACHE BOOL "Use MSYS2 package manager" FORCE)
             set(USE_VCPKG FALSE CACHE BOOL "Use vcpkg package manager" FORCE)
             set(USE_CONAN FALSE CACHE BOOL "Use Conan package manager" FORCE)
-            message(STATUS "No package manager found, using system packages")
+            message(STATUS "Final fallback: system packages")
         endif()
     endif()
 

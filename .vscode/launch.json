@@ -1,0 +1,202 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Application (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug-Windows/app/qt_simple_template.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM_PLUGIN_PATH",
+          "value": "${workspaceFolder}/vcpkg_installed/x64-windows/Qt6/plugins/platforms"
+        }
+      ],
+      "console": "externalTerminal",
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Debug Application (Linux/macOS)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/app/qt_simple_template",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "xcb"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Debug Application (macOS)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/app/qt_simple_template",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "cocoa"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Debug Tests (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug-Windows/tests/unit/unit_tests.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "offscreen"
+        }
+      ],
+      "console": "integratedTerminal",
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Debug Tests (Linux/macOS)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/tests/unit/unit_tests",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "offscreen"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Debug Custom Widget Test",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/tests/unit/controls_tests",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "offscreen"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "CMake: Build (Debug)"
+    },
+    {
+      "name": "Attach to Process",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "${workspaceFolder}/build/Debug/app/qt_simple_template",
+      "processId": "${command:pickProcess}",
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
+      "name": "Debug with Conan (Linux/macOS)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Conan-Debug/app/qt_simple_template",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "QT_QPA_PLATFORM",
+          "value": "xcb"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "preLaunchTask": "Conan: Install Dependencies"
+    },
+    {
+      "name": "Debug with MSYS2",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/MSYS2-UCRT64-Debug/app/qt_simple_template.exe",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {
+          "name": "PATH",
+          "value": "${env:PATH};C:/msys64/ucrt64/bin"
+        }
+      ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}

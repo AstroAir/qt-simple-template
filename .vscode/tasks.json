@@ -1,0 +1,424 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CMake: Configure (Debug)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "${input:cmakePreset}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$cmake"
+      ],
+      "detail": "Configure CMake project with selected preset"
+    },
+    {
+      "label": "CMake: Build (Debug)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "${input:cmakeBuildPreset}"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$gcc",
+        "$msCompile"
+      ],
+      "detail": "Build CMake project with selected preset",
+      "dependsOn": "CMake: Configure (Debug)"
+    },
+    {
+      "label": "CMake: Build (Release)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "--preset",
+        "Release-${input:platform}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$gcc",
+        "$msCompile"
+      ],
+      "detail": "Build CMake project in Release mode"
+    },
+    {
+      "label": "CMake: Clean",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build",
+        "--target",
+        "clean"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Clean CMake build artifacts"
+    },
+    {
+      "label": "CTest: Run All Tests",
+      "type": "shell",
+      "command": "ctest",
+      "args": [
+        "--test-dir",
+        "build/${input:buildDir}",
+        "--output-on-failure",
+        "--parallel",
+        "4"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "Run all tests using CTest",
+      "dependsOn": "CMake: Build (Debug)"
+    },
+    {
+      "label": "CTest: Run Tests (Verbose)",
+      "type": "shell",
+      "command": "ctest",
+      "args": [
+        "--test-dir",
+        "build/${input:buildDir}",
+        "--output-on-failure",
+        "--verbose",
+        "--parallel",
+        "4"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "Run all tests with verbose output"
+    },
+    {
+      "label": "Qt: Update Translations",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/${input:buildDir}",
+        "--target",
+        "update_translations"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Update Qt translation files"
+    },
+    {
+      "label": "Qt: Release Translations",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/${input:buildDir}",
+        "--target",
+        "release_translations"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Release Qt translation files"
+    },
+    {
+      "label": "Static Analysis: clang-tidy",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/${input:buildDir}",
+        "--target",
+        "clang-tidy"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [
+        "$clang-tidy"
+      ],
+      "detail": "Run clang-tidy static analysis"
+    },
+    {
+      "label": "Static Analysis: cppcheck",
+      "type": "shell",
+      "command": "cppcheck",
+      "args": [
+        "--enable=all",
+        "--inconclusive",
+        "--std=c++20",
+        "--project=build/${input:buildDir}/compile_commands.json",
+        "--suppress=missingIncludeSystem",
+        "--suppress=unmatchedSuppression",
+        "app/",
+        "controls/"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "Run cppcheck static analysis"
+    },
+    {
+      "label": "Format: clang-format (All)",
+      "type": "shell",
+      "command": "find",
+      "args": [
+        ".",
+        "-name",
+        "*.cpp",
+        "-o",
+        "-name",
+        "*.h",
+        "-o",
+        "-name",
+        "*.hpp",
+        "|",
+        "xargs",
+        "clang-format",
+        "-i"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Format all C++ files with clang-format",
+      "windows": {
+        "command": "powershell",
+        "args": [
+          "-Command",
+          "Get-ChildItem -Recurse -Include *.cpp,*.h,*.hpp | ForEach-Object { clang-format -i $_.FullName }"
+        ]
+      }
+    },
+    {
+      "label": "Package: Create Installer",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/${input:buildDir}",
+        "--target",
+        "package"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Create installation package"
+    },
+    {
+      "label": "vcpkg: Install Dependencies",
+      "type": "shell",
+      "command": "vcpkg",
+      "args": [
+        "install",
+        "--triplet",
+        "${input:vcpkgTriplet}"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Install dependencies using vcpkg"
+    },
+    {
+      "label": "Conan: Install Dependencies",
+      "type": "shell",
+      "command": "python",
+      "args": [
+        "scripts/build_conan.py",
+        "--build-type",
+        "${input:buildType}",
+        "--install-only"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "detail": "Install dependencies using Conan"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "cmakePreset",
+      "description": "Select CMake configure preset",
+      "type": "pickString",
+      "options": [
+        "Debug-Windows",
+        "Release-Windows",
+        "Debug-Unix",
+        "Release-Unix",
+        "MSYS2-UCRT64-Debug",
+        "MSYS2-UCRT64-Release",
+        "Conan-Debug-Unix",
+        "Conan-Release-Unix"
+      ],
+      "default": "Debug-Windows"
+    },
+    {
+      "id": "cmakeBuildPreset",
+      "description": "Select CMake build preset",
+      "type": "pickString",
+      "options": [
+        "Debug-Windows",
+        "Release-Windows",
+        "Debug-Unix",
+        "Release-Unix",
+        "MSYS2-UCRT64-Debug",
+        "MSYS2-UCRT64-Release",
+        "Conan-Debug-Unix",
+        "Conan-Release-Unix"
+      ],
+      "default": "Debug-Windows"
+    },
+    {
+      "id": "platform",
+      "description": "Select target platform",
+      "type": "pickString",
+      "options": [
+        "Windows",
+        "Unix"
+      ],
+      "default": "Windows"
+    },
+    {
+      "id": "buildDir",
+      "description": "Select build directory",
+      "type": "pickString",
+      "options": [
+        "Debug-Windows",
+        "Release-Windows",
+        "Debug",
+        "Release",
+        "MSYS2-UCRT64-Debug",
+        "MSYS2-UCRT64-Release",
+        "Conan-Debug",
+        "Conan-Release"
+      ],
+      "default": "Debug-Windows"
+    },
+    {
+      "id": "buildType",
+      "description": "Select build type",
+      "type": "pickString",
+      "options": [
+        "Debug",
+        "Release",
+        "RelWithDebInfo",
+        "MinSizeRel"
+      ],
+      "default": "Debug"
+    },
+    {
+      "id": "vcpkgTriplet",
+      "description": "Select vcpkg triplet",
+      "type": "pickString",
+      "options": [
+        "x64-windows",
+        "x64-linux",
+        "x64-osx",
+        "x86-windows",
+        "arm64-osx"
+      ],
+      "default": "x64-windows"
+    }
+  ]
+}

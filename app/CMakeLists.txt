@@ -15,15 +15,42 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+# Handle translations manually since qt_add_translations is not available
 file(GLOB UIs ${CMAKE_SOURCE_DIR}/app/*.ui)
-qt_add_translations(
-    app
-    SOURCES ${UIs}
-    TS_FILE_DIR ${CMAKE_SOURCE_DIR}/app/i18n
-    TS_FILE_BASE app
-)
+file(GLOB TS_FILES ${CMAKE_SOURCE_DIR}/app/i18n/*.ts)
 
-qt_add_resources(RESs app.qrc)
+# Process translation files if they exist
+if(TS_FILES)
+    find_program(LRELEASE_EXECUTABLE lrelease HINTS ${Qt6_DIR}/../../../bin)
+    if(LRELEASE_EXECUTABLE)
+        foreach(TS_FILE ${TS_FILES})
+            get_filename_component(QM_FILE ${TS_FILE} NAME_WE)
+            set(QM_FILE "${CMAKE_CURRENT_BINARY_DIR}/${QM_FILE}.qm")
+            add_custom_command(
+                OUTPUT ${QM_FILE}
+                COMMAND ${LRELEASE_EXECUTABLE} ${TS_FILE} -qm ${QM_FILE}
+                DEPENDS ${TS_FILE}
+                COMMENT "Generating ${QM_FILE}"
+            )
+            list(APPEND QM_FILES ${QM_FILE})
+        endforeach()
+    endif()
+endif()
+
+# Handle resources manually since qt_add_resources is not available
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app.qrc)
+    find_program(RCC_EXECUTABLE rcc HINTS ${Qt6_DIR}/../../../bin)
+    if(RCC_EXECUTABLE)
+        set(QRC_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qrc_app.cpp)
+        add_custom_command(
+            OUTPUT ${QRC_OUTPUT}
+            COMMAND ${RCC_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/app.qrc -o ${QRC_OUTPUT}
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/app.qrc
+            COMMENT "Generating resource file"
+        )
+        set(RESs ${QRC_OUTPUT})
+    endif()
+endif()
 
 # Collect all source files
 file(GLOB_RECURSE APP_SOURCES
@@ -87,9 +114,9 @@ elseif(WIN32)
     )
 endif()
 
-add_dependencies(app COPYING_ASSETS)
-add_custom_target(COPYING_ASSETS DEPENDS ${CMAKE_BINARY_DIR}/COPYING_ASSETS_DUMMY)
+# Fix cyclic dependency by using POST_BUILD command instead of custom target
 add_custom_command(
-    OUTPUT ${CMAKE_BINARY_DIR}/COPYING_ASSETS_DUMMY
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets/styles $<TARGET_FILE_DIR:app>/styles
+    TARGET app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/assets/styles ${CMAKE_CURRENT_BINARY_DIR}/styles
+    COMMENT "Copying asset files after build"
 )

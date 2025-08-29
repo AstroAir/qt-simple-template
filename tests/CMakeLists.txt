@@ -27,6 +27,7 @@ set(TEST_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/app
     ${CMAKE_SOURCE_DIR}/controls
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}/app
 )
 
 # Function to create a test executable
